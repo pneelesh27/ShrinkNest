@@ -1,4 +1,3 @@
-```javascript
 // ==========================================
 // ShrinkNest Firebase Configuration
 // File: js/firebase-config.js
@@ -87,4 +86,3 @@ export {
     provider
 
 };
-```
