@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Image Compressor — ShrinkNest</title>
+
+    <link rel="icon" href="../assets/favicon/favicon.ico">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/tools.css">
+
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+
+        <div class="container nav-container">
+
+            <a href="../index.html" class="logo">
+                🪺 <span>ShrinkNest</span>
+            </a>
+
+            <a href="../dashboard.html" class="btn btn-outline">
+                ← Dashboard
+            </a>
+
+        </div>
+
+    </nav>
+
+    <!-- Tool -->
+    <section class="tool-page">
+
+        <div class="tool-container glass">
+
+            <div class="tool-title">
+
+                <h1>Image Compressor</h1>
+
+                <p>Compress JPG, PNG and WEBP images without noticeable quality loss.</p>
+
+            </div>
+
+            <!-- Upload -->
+            <label class="upload-box">
+
+                <i class="fa-solid fa-image fa-3x"></i>
+
+                <h3>Drag & Drop Images</h3>
+
+                <p>or click to browse</p>
+
+                <input
+                    type="file"
+                    id="imageFile"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    multiple>
+
+            </label>
+
+            <!-- File Info -->
+            <div class="file-info">
+
+                <p>
+                    <strong>Original Size:</strong>
+                    <span id="originalSize">0 KB</span>
+                </p>
+
+            </div>
+
+            <!-- Quality -->
+            <div class="controls">
+
+                <div class="control-group">
+
+                    <label for="qualitySlider">
+
+                        Compression Quality
+
+                    </label>
+
+                    <input
+                        type="range"
+                        id="qualitySlider"
+                        min="0"
+                        max="100"
+                        value="80">
+
+                </div>
+
+            </div>
+
+            <!-- Preview -->
+            <div class="preview-grid">
+
+                <div class="preview-box">
+
+                    <h4>Original</h4>
+
+                    <img
+                        id="beforePreview"
+                        src="../assets/images/image-icon.svg"
+                        alt="Before">
+
+                </div>
+
+                <div class="preview-box">
+
+                    <h4>Compressed</h4>
+
+                    <img
+                        id="afterPreview"
+                        src="../assets/images/image-icon.svg"
+                        alt="After">
+
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="action-buttons">
+
+                <button
+                    id="compressBtn"
+                    class="btn">
+
+                    Compress Image
+
+                </button>
+
+                <button
+                    id="downloadBtn"
+                    class="btn btn-secondary"
+                    style="display:none;">
+
+                    Download Image
+
+                </button>
+
+            </div>
+                        <!-- Result -->
+            <div
+                id="resultCard"
+                class="result-card"
+                style="display:block;">
+
+                <h3>Compression Result</h3>
+
+                <p>
+                    <strong>Compressed Size:</strong>
+                    <span id="compressedSize">0 KB</span>
+                </p>
+
+                <p>
+                    <strong>Space Saved:</strong>
+                    <span id="savedPercent">0%</span>
+                </p>
+
+            </div>
+
+            <!-- Back Button -->
+            <div class="action-buttons">
+
+                <a
+                    href="../dashboard.html"
+                    class="btn btn-secondary">
+
+                    ← Back to Dashboard
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Image Compression Library -->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
+    <!-- Navbar -->
+    <script type="module" src="../js/navbar.js"></script>
+
+    <!-- Image Compressor -->
+    <script type="module" src="../js/image-compress.js"></script>
+
+</body>
+
+</html>
