@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="150" viewBox="0 0 600 150">
+
+  <defs>
+    <linearGradient id="gradText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+
+    <linearGradient id="gradNest" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD166"/>
+      <stop offset="100%" stop-color="#F4A261"/>
+    </linearGradient>
+
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+
+  </defs>
+
+  <!-- Nest -->
+
+  <ellipse
+      cx="72"
+      cy="78"
+      rx="42"
+      ry="22"
+      fill="url(#gradNest)"
+      filter="url(#shadow)"/>
+
+  <ellipse
+      cx="72"
+      cy="72"
+      rx="30"
+      ry="15"
+      fill="#FFE8A3"/>
+
+  <!-- Twigs -->
+
+  <path
+      d="M38 78 C55 55 88 100 106 70"
+      stroke="#8B5E3C"
+      stroke-width="4"
+      fill="none"/>
+
+  <path
+      d="M35 68 C60 92 90 50 108 86"
+      stroke="#8B5E3C"
+      stroke-width="3"
+      fill="none"/>
+
+  <!-- Egg -->
+
+  <ellipse
+      cx="72"
+      cy="66"
+      rx="12"
+      ry="16"
+      fill="#6C63FF"/>
+
+  <!-- Compression arrows -->
+
+  <polygon
+      points="46,48 60,55 46,62"
+      fill="#00D4FF"/>
+
+  <polygon
+      points="98,48 84,55 98,62"
+      fill="#00D4FF"/>
+
+  <!-- Text -->
+
+  <text
+      x="135"
+      y="90"
+      font-family="Poppins, Arial, sans-serif"
+      font-size="58"
+      font-weight="700"
+      fill="url(#gradText)">
+      ShrinkNest
+  </text>
+
+</svg>
