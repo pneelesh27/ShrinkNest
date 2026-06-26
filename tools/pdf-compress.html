@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Compressor — ShrinkNest</title>
+
+    <link rel="icon" href="../assets/favicon/favicon.ico">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/tools.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+
+            <a href="../index.html" class="logo">
+                🪺 <span>ShrinkNest</span>
+            </a>
+
+            <a href="../dashboard.html" class="btn btn-outline">
+                ← Dashboard
+            </a>
+
+        </div>
+    </nav>
+
+    <!-- Tool Section -->
+    <section class="tool-page">
+
+        <div class="tool-container glass">
+
+            <div class="tool-title">
+
+                <h1>PDF Compressor</h1>
+
+                <p>Compress PDF files while maintaining quality.</p>
+
+            </div>
+
+            <!-- Upload -->
+            <label class="upload-box">
+
+                <i class="fa-solid fa-file-pdf fa-3x"></i>
+
+                <h3>Drag & Drop PDF</h3>
+
+                <p>or click to browse</p>
+
+                <input
+                    type="file"
+                    id="pdfFile"
+                    accept=".pdf">
+
+            </label>
+
+            <!-- File Info -->
+            <div class="file-info">
+
+                <p><strong>File:</strong> <span id="fileName">No file selected</span></p>
+
+                <p><strong>Original Size:</strong> <span id="originalSize">0 KB</span></p>
+
+            </div>
+
+            <!-- Compression Level -->
+            <div class="controls">
+
+                <div class="control-group">
+
+                    <label for="compressionLevel">
+
+                        Compression Level
+
+                    </label>
+
+                    <select id="compressionLevel">
+
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="action-buttons">
+
+                <button
+                    id="compressBtn"
+                    class="btn">
+
+                    Compress PDF
+
+                </button>
+
+                <button
+                    id="downloadBtn"
+                    class="btn btn-secondary"
+                    style="display:none;">
+
+                    Download PDF
+
+                </button>
+
+            </div>
+                        <!-- Progress -->
+            <div
+                id="progressContainer"
+                class="progress-container">
+
+                <div
+                    id="progressBar"
+                    class="progress-bar">
+
+                </div>
+
+            </div>
+
+            <!-- Result -->
+            <div
+                class="result-card"
+                id="resultCard"
+                style="display:block;">
+
+                <h3>Compression Result</h3>
+
+                <p>
+                    <strong>Compressed Size:</strong>
+                    <span id="compressedSize">0 KB</span>
+                </p>
+
+                <p>
+                    <strong>Space Saved:</strong>
+                    <span id="savedPercent">0%</span>
+                </p>
+
+            </div>
+
+            <div class="action-buttons">
+
+                <a
+                    href="../dashboard.html"
+                    class="btn btn-secondary">
+
+                    ← Back to Dashboard
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- PDF-LIB CDN -->
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+    <!-- Navbar -->
+    <script type="module" src="../js/navbar.js"></script>
+
+    <!-- PDF Compressor -->
+    <script type="module" src="../js/pdf-compress.js"></script>
+
+</body>
+
+</html>
