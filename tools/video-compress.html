@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Video Compressor — ShrinkNest</title>
+
+    <link rel="icon" href="../assets/favicon/favicon.ico">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/tools.css">
+
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+
+        <div class="container nav-container">
+
+            <a href="../index.html" class="logo">
+                🪺 <span>ShrinkNest</span>
+            </a>
+
+            <a href="../dashboard.html" class="btn btn-outline">
+                ← Dashboard
+            </a>
+
+        </div>
+
+    </nav>
+
+    <!-- Tool Section -->
+    <section class="tool-page">
+
+        <div class="tool-container glass">
+
+            <div class="tool-title">
+
+                <h1>Video Compressor</h1>
+
+                <p>Compress MP4 and MOV videos directly in your browser.</p>
+
+            </div>
+
+            <!-- Warning -->
+            <div class="warning-banner">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <span>
+                    ⚠️ Large videos may take time. Please do not close this tab.
+                </span>
+
+            </div>
+
+            <!-- Upload -->
+            <label class="upload-box">
+
+                <i class="fa-solid fa-video fa-3x"></i>
+
+                <h3>Drag & Drop Video</h3>
+
+                <p>or click to browse</p>
+
+                <input
+                    type="file"
+                    id="videoFile"
+                    accept=".mp4,.mov">
+
+            </label>
+
+            <!-- File Info -->
+            <div class="file-info">
+
+                <p>
+                    <strong>File:</strong>
+                    <span id="fileName">No file selected</span>
+                </p>
+
+                <p>
+                    <strong>Original Size:</strong>
+                    <span id="originalSize">0 MB</span>
+                </p>
+
+                <p>
+                    <strong>Duration:</strong>
+                    <span id="duration">0 sec</span>
+                </p>
+
+            </div>
+
+            <!-- Quality -->
+            <div class="controls">
+
+                <div class="control-group">
+
+                    <label for="qualitySelect">
+
+                        Compression Quality
+
+                    </label>
+
+                    <select id="qualitySelect">
+
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="action-buttons">
+
+                <button
+                    id="compressBtn"
+                    class="btn">
+
+                    Compress Video
+
+                </button>
+
+                <button
+                    id="downloadBtn"
+                    class="btn btn-secondary"
+                    style="display:none;">
+
+                    Download Video
+
+                </button>
+
+            </div>
+                        <!-- Progress -->
+            <div
+                id="progressContainer"
+                class="progress-container">
+
+                <div
+                    id="progressBar"
+                    class="progress-bar">
+
+                </div>
+
+            </div>
+
+            <!-- Result -->
+            <div
+                id="resultCard"
+                class="result-card"
+                style="display:block;">
+
+                <h3>Compression Result</h3>
+
+                <p>
+                    <strong>Compressed Size:</strong>
+                    <span id="compressedSize">0 MB</span>
+                </p>
+
+                <p>
+                    <strong>Space Saved:</strong>
+                    <span id="savedPercent">0%</span>
+                </p>
+
+            </div>
+
+            <!-- Back Button -->
+            <div class="action-buttons">
+
+                <a
+                    href="../dashboard.html"
+                    class="btn btn-secondary">
+
+                    ← Back to Dashboard
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- FFmpeg WASM -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js"></script>
+
+    <!-- Navbar -->
+    <script type="module" src="../js/navbar.js"></script>
+
+    <!-- Video Compressor -->
+    <script type="module" src="../js/video-compress.js"></script>
+
+</body>
+
+</html>
