@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | ShrinkNest</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="container nav-container">
+
+        <a href="index.html" class="logo">
+            <span class="logo-icon">🪺</span>
+            <span>ShrinkNest</span>
+        </a>
+
+        <nav>
+
+            <ul class="nav-links">
+
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#tools">Tools</a></li>
+                <li><a href="signup.html">Sign Up</a></li>
+
+            </ul>
+
+        </nav>
+
+    </div>
+
+</header>
+
+<section class="auth-section">
+
+    <div class="auth-container glass">
+
+        <div class="auth-logo">
+
+            <span class="logo-icon">🪺</span>
+
+            <h2>ShrinkNest</h2>
+
+            <p>Compress Anything. Store Everything.</p>
+
+        </div>
+
+        <h1>Welcome Back to ShrinkNest</h1>
+
+        <form id="loginForm">
+
+            <div class="input-group">
+
+                <label>Email Address</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required>
+
+                <small class="error" id="emailError"></small>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Password</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required>
+
+                <small class="error" id="passwordError"></small>
+
+            </div>
+
+            <div class="auth-options">
+
+                <a href="#" id="forgotPassword">
+
+                    Forgot Password?
+
+                </a>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary auth-btn">
+
+                Login
+
+            </button>
+
+            <div class="divider">
+
+                <span>OR</span>
+
+            </div>
+
+            <button
+                type="button"
+                id="googleLogin"
+                class="google-btn">
+
+                <i class="fab fa-google"></i>
+
+                Continue with Google
+
+            </button>
+
+            <p class="auth-footer">
+
+                Don't have an account?
+
+                <a href="signup.html">
+
+                    Sign Up
+
+                </a>
+
+            </p>
+
+        </form>
+
+    </div>
+
+</section>
+
+<script type="module">
+import {
+    login,
+    googleLogin,
+    forgotPassword,
+    redirectIfLoggedIn
+} from "./js/auth.js";
+
+redirectIfLoggedIn();
+
+const loginForm = document.getElementById("loginForm");
+const googleBtn = document.getElementById("googleLogin");
+const forgotBtn = document.getElementById("forgotPassword");
+
+loginForm.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    document.getElementById("emailError").textContent = "";
+    document.getElementById("passwordError").textContent = "";
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    const result = await login(email, password);
+
+    if (result.success) {
+
+        window.location.href = "dashboard.html";
+
+    } else {
+
+        if (result.message.toLowerCase().includes("email")) {
+
+            document.getElementById("emailError").textContent =
+                result.message;
+
+        } else {
+
+            document.getElementById("passwordError").textContent =
+                result.message;
+
+        }
+
+    }
+
+});
+
+googleBtn.addEventListener("click", async () => {
+
+    const result = await googleLogin();
+
+    if (result.success) {
+
+        window.location.href = "dashboard.html";
+
+    } else {
+
+        alert(result.message);
+
+    }
+
+});
+
+forgotBtn.addEventListener("click", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+
+        alert("Please enter your email address first.");
+
+        return;
+
+    }
+
+    const result = await forgotPassword(email);
+
+    alert(result.message);
+
+});
+</script>
+
+</body>
+
+</html>
