@@ -47,6 +47,13 @@ compressMethodRadios.forEach(radio => {
     });
 });
 
+// Helper to load external scripts/wasm as local Blob URLs to bypass CORS on file:// protocol
+async function toBlobURL(url, mimeType) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return URL.createObjectURL(new Blob([blob], { type: mimeType }));
+}
+
 // ==========================================
 // LOAD FFMPEG (0.12.x Single-Threaded)
 // ==========================================
@@ -62,9 +69,12 @@ async function loadFFmpeg() {
         console.log(message);
     });
 
+    const coreURL = await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js', 'text/javascript');
+    const wasmURL = await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm', 'application/wasm');
+
     await ffmpeg.load({
-        coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
-        wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
+        coreURL,
+        wasmURL
     });
 
     return ffmpeg;

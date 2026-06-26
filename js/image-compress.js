@@ -62,6 +62,48 @@ uploadInput.addEventListener("change", (e) => {
 });
 
 // ==========================================
+// NATIVE COMPRESSION HELPER
+// ==========================================
+
+async function compressImageNative(file, quality, targetSizeKB = null) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            
+            // Scale resolution if we want to hit a target size
+            let scale = 1.0;
+            if (targetSizeKB) {
+                const estSizeKB = (file.size / 1024) * quality;
+                if (estSizeKB > targetSizeKB) {
+                    scale = Math.max(0.2, Math.sqrt(targetSizeKB / estSizeKB));
+                }
+            }
+            
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            const outputType = "image/jpeg";
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                        type: outputType,
+                        lastModified: Date.now()
+                    }));
+                } else {
+                    reject(new Error("toBlob failed"));
+                }
+            }, outputType, quality);
+        };
+        img.onerror = () => reject(new Error("Load image failed"));
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+// ==========================================
 // COMPRESS IMAGE
 // ==========================================
 
@@ -78,44 +120,44 @@ compressBtn.addEventListener("click", async () => {
     compressBtn.disabled = true;
     compressBtn.textContent = "Compressing...";
 
+    try {
+
         const method = Array.from(compressMethodRadios).find(r => r.checked).value;
-        let options = null;
 
         if (method === "quality") {
             const quality = Number(qualitySlider.value) / 100;
             if (quality === 1.0) {
                 compressedFile = selectedFile;
             } else {
-                const targetSizeMB = (selectedFile.size / (1024 * 1024)) * quality;
-                options = {
-                    maxSizeMB: Math.max(0.01, targetSizeMB),
-                    maxWidthOrHeight: 1920,
-                    useWebWorker: false,
-                    initialQuality: quality,
-                    alwaysKeepResolution: false
-                };
+                compressedFile = await compressImageNative(selectedFile, quality);
             }
         } else {
             const targetSizeKB = Number(targetSizeInput.value) || 200;
-            options = {
-                maxSizeMB: Math.max(0.01, targetSizeKB / 1024),
-                maxWidthOrHeight: 1920,
-                useWebWorker: false,
-                alwaysKeepResolution: false
-            };
+            
+            // Perform a bisection search on quality to find the best quality that fits target size
+            let minQ = 0.05;
+            let maxQ = 0.95;
+            let bestFile = null;
+            
+            for (let i = 0; i < 5; i++) {
+                const midQ = (minQ + maxQ) / 2;
+                const tempFile = await compressImageNative(selectedFile, midQ, targetSizeKB);
+                const tempSizeKB = tempFile.size / 1024;
+                
+                if (tempSizeKB <= targetSizeKB) {
+                    bestFile = tempFile;
+                    minQ = midQ;
+                } else {
+                    maxQ = midQ;
+                }
+            }
+            
+            compressedFile = bestFile || await compressImageNative(selectedFile, 0.05, targetSizeKB);
         }
 
-        if (options) {
-            // Force format conversion to JPEG for PNGs so they can actually be compressed
-            if (selectedFile.type === "image/png" || selectedFile.name.toLowerCase().endsWith(".png")) {
-                options.fileType = "image/jpeg";
-            }
-            compressedFile = await imageCompression(selectedFile, options);
-
-            // Fallback to original if compressed version is somehow larger
-            if (compressedFile.size >= selectedFile.size) {
-                compressedFile = selectedFile;
-            }
+        // Fallback to original if compressed version is somehow larger
+        if (compressedFile && compressedFile.size >= selectedFile.size) {
+            compressedFile = selectedFile;
         }
 
         afterPreview.src = URL.createObjectURL(compressedFile);

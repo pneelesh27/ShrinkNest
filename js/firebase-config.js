@@ -21,13 +21,19 @@ import {
 // ==========================================
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC9I2GW2JzJ67BZVKzQLgb5x2ob6nay5qY",
-  authDomain: "shrinknest.firebaseapp.com",
-  projectId: "shrinknest",
-  storageBucket: "shrinknest.firebasestorage.app",
-  messagingSenderId: "505871213137",
-  appId: "1:505871213137:web:432c607f996a704e87ce70",
-  measurementId: "G-6C4B2FDPN3"
+
+    apiKey: "YOUR_API_KEY",
+
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+
+    projectId: "YOUR_PROJECT_ID",
+
+    storageBucket: "YOUR_PROJECT.appspot.com",
+
+    messagingSenderId: "YOUR_SENDER_ID",
+
+    appId: "YOUR_APP_ID"
+
 };
 
 
