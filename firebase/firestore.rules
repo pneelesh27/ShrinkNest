@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+
+  match /databases/{database}/documents {
+
+    // User profile documents
+    match /users/{userId} {
+
+      allow read, update, delete: if request.auth != null
+                                  && request.auth.uid == userId;
+
+      allow create: if request.auth != null
+                    && request.auth.uid == userId;
+
+    }
+
+    // Compression history
+    match /history/{historyId} {
+
+      allow create: if request.auth != null;
+
+      allow read: if request.auth != null
+                  && resource.data.uid == request.auth.uid;
+
+      allow update, delete: if request.auth != null
+                            && resource.data.uid == request.auth.uid;
+
+    }
+
+    // Deny everything else
+    match /{document=**} {
+
+      allow read, write: if false;
+
+    }
+
+  }
+
+}
