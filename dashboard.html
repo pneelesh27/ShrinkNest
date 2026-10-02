@@ -22,6 +22,27 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .history-download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: linear-gradient(135deg, #6c63ff, #48cfad);
+            color: #fff;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.15s;
+            white-space: nowrap;
+        }
+        .history-download-btn:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+        .history-download-btn i { font-size: 0.75rem; }
+    </style>
 
 </head>
 
@@ -209,6 +230,7 @@
                         <th>Saved</th>
                         <th>Date</th>
                         <th>Type</th>
+                        <th>Action</th>
 
                     </tr>
 

@@ -3,14 +3,9 @@
 // File: js/video-compress.js
 // ==========================================
 
-import { auth, db } from "./firebase-config.js";
+import { auth } from "./firebase-config.js";
 import { calculateSavedPercentage, formatFileSize } from "./utils.js";
-
-import {
-    collection,
-    addDoc,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import { saveCompressionHistory } from "./history.js";
 
 const uploadInput = document.getElementById("videoFile");
 const compressBtn = document.getElementById("compressBtn");
@@ -256,20 +251,14 @@ compressBtn.addEventListener("click", async () => {
 
         // Save history to Firestore if logged in
         if (auth.currentUser) {
-            try {
-                await addDoc(collection(db, "history"), {
-                    uid: auth.currentUser.uid,
-                    filename: selectedFile.name,
-                    originalSize: formatFileSize(selectedFile.size),
-                    compressedSize: formatFileSize(finalSize),
-                    saved: saved,
-                    type: "video",
-                    date: new Date().toLocaleDateString(),
-                    timestamp: serverTimestamp()
-                });
-            } catch (err) {
-                console.error("Firestore history save failed:", err);
-            }
+            saveCompressionHistory({
+                filename: selectedFile.name,
+                originalSize: formatFileSize(selectedFile.size),
+                compressedSize: formatFileSize(finalSize),
+                saved: saved,
+                type: "video",
+                compressedFile: compressedBlob
+            });
         }
 
         // Clean FFmpeg virtual filesystem

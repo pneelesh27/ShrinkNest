@@ -15,6 +15,10 @@ import {
     getFirestore
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
+import {
+    getStorage
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+
 
 // ==========================================
 // Replace this with YOUR Firebase Config
@@ -22,7 +26,7 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9I2GW2JzJ67BZVKzQLgb5x2ob6nay5qY",
-  authDomain: "shrinknest.firebaseapp.com",
+  authDomain: "shrinknest.web.app",
   projectId: "shrinknest",
   storageBucket: "shrinknest.firebasestorage.app",
   messagingSenderId: "505871213137",
@@ -66,6 +70,13 @@ const db = getFirestore(app);
 
 
 // ==========================================
+// Storage
+// ==========================================
+
+const storage = getStorage(app);
+
+
+// ==========================================
 // Export Everything
 // ==========================================
 
@@ -76,6 +87,8 @@ export {
     auth,
 
     db,
+
+    storage,
 
     provider
 

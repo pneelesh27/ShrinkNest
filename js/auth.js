@@ -160,7 +160,6 @@ export async function googleLogin() {
         try {
             const userRef = doc(db, "users", user.uid);
             const snapshot = await getDoc(userRef);
-
             if (!snapshot.exists()) {
                 await setDoc(userRef, {
                     uid: user.uid,
@@ -187,7 +186,7 @@ export async function googleLogin() {
 }
 
 // ==========================================
-// HANDLE GOOGLE REDIRECT RESULT (stub)
+// HANDLE GOOGLE REDIRECT RESULT
 // ==========================================
 
 export async function handleRedirectResult() {
