@@ -1,317 +1,1184 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Editor — ShrinkNest</title>
-    <meta name="description" content="Edit PDFs in your browser — merge, split, rotate, remove and extract pages with ShrinkNest PDF Editor. No uploads required.">
+    <meta name="description"
+        content="Edit PDFs in your browser — merge, split, rotate, remove, duplicate, annotate and extract pages with ShrinkNest PDF Editor. 100% private, client-side.">
     <link rel="icon" href="../assets/favicon/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        crossorigin="anonymous">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/pdf-editor.css">
 </head>
+
 <body>
 
-<!-- ══ NAVBAR ══ -->
-<header class="navbar">
-    <div class="container nav-container">
-        <a href="../index.html" class="logo">
-            <span class="logo-icon">🪺</span>
-            <span>ShrinkNest</span>
-        </a>
-        <nav id="navMenu">
-            <ul class="nav-links">
-                <li><a href="../index.html">Home</a></li>
-                <li><a href="../tools.html">Tools</a></li>
-                <li id="loginNavItem"><a href="../login.html" id="loginBtn">Login</a></li>
-                <li id="signupNavItem"><a href="../signup.html" class="signup-btn" id="signupBtn">Sign Up</a></li>
-                <li id="profileNavItem" style="display:none;">
-                    <a href="../dashboard.html" class="profile-nav-btn" id="profileBtn">
-                        <img id="navUserPhoto" src="../assets/images/default-avatar.svg" alt="" referrerpolicy="no-referrer" class="nav-avatar">
-                        <span id="navUserName">Account &amp; History</span>
-                    </a>
-                </li>
-                <li id="logoutNavItem" style="display:none;">
-                    <button id="logoutBtn" class="btn-logout" title="Sign Out">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </li>
-            </ul>
-        </nav>
-        <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    <!-- ══ FULL-WINDOW DRAG-AND-DROP OVERLAY ══ -->
+    <div class="window-drop-overlay" id="windowDropOverlay">
+        <div class="window-drop-content">
+            <i class="fas fa-file-circle-plus"></i>
+            <h3>Drop PDF files anywhere</h3>
+            <p>They will be added to your current editor session</p>
+        </div>
     </div>
-</header>
 
-<!-- ══ MAIN ══ -->
-<main class="pdf-editor-page">
-    <div class="container">
-
-        <!-- Title -->
-        <div style="text-align:center;margin-bottom:28px;">
-            <h1 style="font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px;">
-                <i class="fas fa-file-pdf" style="color:#FF6B6B;margin-right:10px;"></i>PDF Editor
-            </h1>
-            <p style="color:#888;font-size:15px;">Merge · Split · Rotate · Remove · Extract · Add Text · Crop — all in your browser.</p>
+    <!-- ══ NAVBAR ══ -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">🪺</span>
+                <span>ShrinkNest</span>
+            </a>
+            <nav id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../tools.html">Tools</a></li>
+                    <li id="loginNavItem"><a href="../login.html" id="loginBtn">Login</a></li>
+                    <li id="signupNavItem"><a href="../signup.html" class="signup-btn" id="signupBtn">Sign Up</a></li>
+                    <li id="profileNavItem" style="display:none;">
+                        <a href="../dashboard.html" class="profile-nav-btn" id="profileBtn">
+                            <img id="navUserPhoto" src="../assets/images/default-avatar.svg" alt=""
+                                referrerpolicy="no-referrer" class="nav-avatar">
+                            <span id="navUserName">Account &amp; History</span>
+                        </a>
+                    </li>
+                    <li id="logoutNavItem" style="display:none;">
+                        <button id="logoutBtn" class="btn-logout" title="Sign Out">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
+    </header>
 
-        <!-- Error Banner -->
-        <div class="pe-error-banner" id="errorBanner" style="margin-bottom:16px;">
-            <i class="fas fa-circle-exclamation"></i>
-            <span id="errorMsg"></span>
-        </div>
+    <!-- ══ MAIN ══ -->
+    <main class="pdf-editor-page">
+        <div class="container">
 
-        <!-- Upload Zone -->
-        <label class="upload-zone" id="uploadZone" for="fileInput">
-            <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
-            <h2>Drag &amp; Drop your PDFs here</h2>
-            <p>or click to browse — multiple files supported</p>
-            <span class="btn-choose"><i class="fas fa-arrow-up-from-bracket"></i> Choose PDF Files</span>
-            <p class="upload-hint"><i class="fa-solid fa-shield-halved"></i> Works 100% in your browser. Files are never uploaded to a server.</p>
-            <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple>
-        </label>
+            <!-- Title & Privacy Badge -->
+            <div class="tool-title" style="text-align:center;margin-bottom:28px;">
+                <h1 style="font-size:36px;font-weight:700;background:linear-gradient(135deg, #6C63FF, #00D4FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;display:inline-flex;align-items:center;justify-content:center;gap:12px;">
+                    <span style="-webkit-text-fill-color:initial;display:inline-flex;"><i class="fas fa-file-pdf" style="color:#FF5A5F;"></i></span><span>PDF Editor</span>
+                </h1>
+                <p style="color:var(--pe-text-secondary);font-size:15px;margin-bottom:8px;">
+                    Merge · Split · Rotate · Reorder · Remove · Duplicate · Edit Pages — all client-side.
+                </p>
+                <div class="pe-privacy-badge">
+                    <i class="fa-solid fa-shield-halved"></i> 100% Client-Side — Files never leave your device
+                </div>
+            </div>
 
-        <!-- Editor Workspace -->
-        <div class="editor-workspace" id="editorWorkspace">
+            <!-- Error Banner -->
+            <div class="pe-error-banner" id="errorBanner">
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="errorMsg"></span>
+            </div>
 
-            <!-- File Bar -->
-            <div class="file-bar">
-                <div class="file-bar-left">
-                    <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
-                    <div>
-                        <h3 id="fileLabel">document.pdf</h3>
-                        <p id="fileMeta">0 pages</p>
+            <!-- Initial Upload Zone -->
+            <label class="upload-zone" id="uploadZone" for="fileInput">
+                <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+                <h2>Drag &amp; Drop your PDFs here</h2>
+                <p>or click to browse — multiple PDF files supported</p>
+                <span class="btn-choose"><i class="fas fa-arrow-up-from-bracket"></i> Choose PDF Files</span>
+                <p class="upload-hint"><i class="fa-solid fa-lock"></i> Client-side processing. Your documents remain
+                    completely private.</p>
+                <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple>
+            </label>
+
+            <!-- Editor Workspace -->
+            <div class="editor-workspace" id="editorWorkspace">
+
+                <!-- File Bar (Multi-file Glass Card) -->
+                <div class="file-bar" id="fileBar">
+                    <div class="file-bar-main">
+                        <div class="file-bar-left">
+                            <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
+                            <div>
+                                <h3 id="fileLabel">document.pdf</h3>
+                                <p id="fileMeta">0 pages</p>
+                            </div>
+                        </div>
+                        <div class="file-bar-actions">
+                            <button type="button" class="btn-toggle-files" id="btnToggleFiles" style="display:none;">
+                                <i class="fas fa-layer-group"></i> <span id="filesCountText">Files (1)</span> <i
+                                    class="fas fa-chevron-down" id="filesChevron"></i>
+                            </button>
+                            <label class="btn-add-pdf" title="Add more PDFs to this session">
+                                <i class="fas fa-plus"></i> Add More PDFs
+                                <input type="file" id="addMoreInput" accept=".pdf,application/pdf" multiple>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Collapsible List of Loaded PDF Files -->
+                    <div class="files-list-container" id="filesListContainer"></div>
+                </div>
+
+                <!-- Sticky Top Toolbar -->
+                <div class="sticky-toolbar" id="editorToolbar">
+                    <!-- Group 1: Selection -->
+                    <div class="toolbar-group">
+                        <button class="tb-btn" id="btnSelectAll" title="Select All Pages (Ctrl+A)">
+                            <i class="fas fa-check-double"></i> <span>All</span>
+                        </button>
+                        <button class="tb-btn" id="btnDeselectAll" title="Deselect All (Esc)">
+                            <i class="fas fa-xmark"></i> <span>None</span>
+                        </button>
+                        <div class="tb-range-group" title="Select pages by range e.g. 1-3, 5, 8-10" style="position:relative;">
+                            <input type="text" id="tbRangeInput" placeholder="1-3, 5" class="tb-range-input">
+                            <button type="button" class="tb-range-btn" id="btnRangeSelect">Select</button>
+                            <button type="button" class="tb-range-btn" id="btnRangePresets" title="Presets (Even, Odd, Invert)"><i class="fas fa-ellipsis-vertical"></i></button>
+                            <div class="range-presets-menu" id="rangePresetsMenu" style="display:none;">
+                                <button type="button" class="range-preset-item" id="presetEven"><i class="fas fa-list-ol"></i> Even Pages (2, 4, 6…)</button>
+                                <button type="button" class="range-preset-item" id="presetOdd"><i class="fas fa-list-ol"></i> Odd Pages (1, 3, 5…)</button>
+                                <button type="button" class="range-preset-item" id="presetInvert"><i class="fas fa-shuffle"></i> Invert Selection</button>
+                            </div>
+                        </div>
+                        <span class="tb-selection-pill" id="tbSelectionPill">0 selected</span>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Group 2: Page Actions -->
+                    <div class="toolbar-group">
+                        <button class="tb-btn" id="btnRotL" title="Rotate selected left (Shift+R)" disabled>
+                            <i class="fas fa-rotate-left"></i> <span>Left</span>
+                        </button>
+                        <button class="tb-btn" id="btnRotR" title="Rotate selected right (R)" disabled>
+                            <i class="fas fa-rotate-right"></i> <span>Right</span>
+                        </button>
+                        <button class="tb-btn" id="btnDuplicate" title="Duplicate selected page(s)" disabled>
+                            <i class="fas fa-copy"></i> <span>Duplicate</span>
+                        </button>
+                        <button class="tb-btn" id="btnInsertBlank" title="Insert blank page">
+                            <i class="fas fa-file-circle-plus"></i> <span>+ Blank</span>
+                        </button>
+                        <button class="tb-btn" id="btnExtract" title="Extract selected pages into new PDF" disabled>
+                            <i class="fas fa-file-export"></i> <span>Extract</span>
+                        </button>
+                        <button class="tb-btn danger" id="btnRemove" title="Remove selected pages (Delete)" disabled>
+                            <i class="fas fa-trash-can"></i> <span>Remove</span>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Group 3: History & Tools -->
+                    <div class="toolbar-group">
+                        <button class="tb-btn" id="btnMerge" title="Merge all pages into one PDF">
+                            <i class="fas fa-layer-group"></i> <span>Merge</span>
+                        </button>
+                        <button class="tb-btn" id="btnSplit" title="Split PDF by page ranges">
+                            <i class="fas fa-scissors"></i> <span>Split</span>
+                        </button>
+                        <button class="tb-btn" id="btnPageNumbers" title="Add Page Numbers">
+                            <i class="fas fa-arrow-down-1-9"></i> <span>Page #</span>
+                        </button>
+                        <button class="tb-btn" id="btnWatermark" title="Add Text or Image Watermark">
+                            <i class="fas fa-stamp"></i> <span>Watermark</span>
+                        </button>
+                        <button class="tb-btn" id="btnCropModal" title="Crop Pages">
+                            <i class="fas fa-crop-simple"></i> <span>Crop</span>
+                        </button>
+                        <button class="tb-btn" id="btnResizeModal" title="Resize Pages & Margins">
+                            <i class="fas fa-up-right-and-down-left-from-center"></i> <span>Resize</span>
+                        </button>
+                        <button class="tb-btn" id="btnConvertModal" title="Convert PDF to Images">
+                            <i class="fas fa-images"></i> <span>Convert</span>
+                        </button>
+                        <button class="tb-btn" id="btnAdvSplitModal" title="Advanced Split Options">
+                            <i class="fas fa-scissors"></i> <span>Split+</span>
+                        </button>
+                        <button class="tb-btn" id="btnPasswordModal" title="Password Protect PDF">
+                            <i class="fas fa-lock"></i> <span>Password</span>
+                        </button>
+                        <button class="tb-btn" id="btnExtractTextModal" title="Extract Text from PDF">
+                            <i class="fas fa-file-lines"></i> <span>Text</span>
+                        </button>
+                        <button class="tb-btn" id="btnUndo" title="Undo (Ctrl+Z)" disabled>
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
+                        <button class="tb-btn" id="btnRedo" title="Redo (Ctrl+Y or Ctrl+Shift+Z)" disabled>
+                            <i class="fas fa-rotate-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Group 4: View Controls & Shortcuts -->
+                    <div class="toolbar-group">
+                        <div class="tb-zoom-group">
+                            <button class="tb-btn-icon" data-zoom="sm" id="btnZoomSm" title="Small thumbnails">
+                                <i class="fas fa-border-all" style="font-size:11px;"></i>
+                            </button>
+                            <button class="tb-btn-icon active" data-zoom="md" id="btnZoomMd" title="Medium thumbnails">
+                                <i class="fas fa-table-cells-large"></i>
+                            </button>
+                            <button class="tb-btn-icon" data-zoom="lg" id="btnZoomLg" title="Large thumbnails">
+                                <i class="fas fa-square"></i>
+                            </button>
+                        </div>
+                        <button class="tb-btn-icon" id="btnViewToggle" title="Toggle Grid / List View">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button class="tb-btn-icon" id="btnShortcutsHelp" title="Keyboard Shortcuts (?)">
+                            <i class="fas fa-circle-question"></i>
+                        </button>
                     </div>
                 </div>
-                <label class="btn-add-pdf">
-                    <i class="fas fa-plus"></i> Add More PDFs
-                    <input type="file" id="addMoreInput" accept=".pdf,application/pdf" multiple>
+
+                <!-- Split Range Panel -->
+                <div class="split-panel" id="splitPanel">
+                    <label><i class="fas fa-scissors"></i> Page ranges for split:</label>
+                    <input type="text" id="splitInput" placeholder="e.g. 1-3, 4-6, 7-10">
+                    <button class="tb-btn success" id="btnSplitGo"><i class="fas fa-play"></i> Split Now</button>
+                </div>
+
+                <!-- Progress Panel -->
+                <div class="progress-panel" id="progressPanel">
+                    <div class="progress-ring"></div>
+                    <p id="progressMsg">Processing…</p>
+                    <small>Please wait, working entirely in your browser.</small>
+                </div>
+
+                <!-- Pages Grid Section -->
+                <div id="pagesSection">
+                    <div class="pages-header">
+                        <h4>
+                            <i class="fas fa-grip"></i> Pages
+                            <span class="pages-subhint">— click page to edit, drag to reorder, check to select</span>
+                        </h4>
+                        <span class="pages-counter glass-pill" id="pageCount">0 pages</span>
+                    </div>
+                    <div class="pages-grid" id="pagesGrid" data-zoom="md" data-view="grid"></div>
+                    <div class="pages-empty-state" id="pagesEmptyState" style="display:none;">
+                        <div class="empty-icon"><i class="fas fa-file-circle-xmark"></i></div>
+                        <h3>No pages in this document</h3>
+                        <p>All pages were removed or no document is loaded.</p>
+                        <label class="btn-choose" for="addMoreInput"><i class="fas fa-plus"></i> Add Pages</label>
+                    </div>
+                </div>
+
+                <!-- Result Panel -->
+                <div class="result-panel" id="resultPanel">
+                    <div class="result-icon"><i class="fas fa-check"></i></div>
+                    <h3>PDF Ready!</h3>
+                    <p id="resultInfo">Your PDF has been processed.</p>
+                    <div class="result-actions" id="resultActions"></div>
+                </div>
+
+            </div><!-- /editor-workspace -->
+        </div><!-- /container -->
+    </main>
+
+    <!-- ══ Sticky Save Bar ══ -->
+    <div class="sticky-bottom-bar" id="saveBar">
+        <div class="save-bar-left" id="saveBarInfo">0 pages • Click a page to edit it</div>
+        <button class="btn-save-download" id="btnSave" disabled>
+            <i class="fas fa-floppy-disk"></i> Save &amp; Download PDF
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+     PAGE EDITOR FULLSCREEN MODAL
+══════════════════════════════════════════════ -->
+    <div class="pe-modal-full" id="pageEditorModal">
+        <div class="pe-modal-inner">
+
+            <!-- Header -->
+            <div class="pe-header">
+                <div class="pe-header-left">
+                    <button class="pe-icon-btn" id="pePrevPage" title="Previous page" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="pe-page-indicator" id="pePageIndicator">Page 1 of 1</span>
+                    <button class="pe-icon-btn" id="peNextPage" title="Next page">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="pe-header-center">
+                    <i class="fas fa-file-pen" style="color:var(--pe-purple);margin-right:6px;"></i> Page Editor
+                </div>
+                <div class="pe-header-right">
+                    <!-- Zoom -->
+                    <button class="pe-icon-btn" id="peZoomOut" title="Zoom Out"><i
+                            class="fas fa-magnifying-glass-minus"></i></button>
+                    <span class="pe-zoom-label" id="peZoomLabel">100%</span>
+                    <button class="pe-icon-btn" id="peZoomIn" title="Zoom In"><i
+                            class="fas fa-magnifying-glass-plus"></i></button>
+                    <div class="pe-header-sep"></div>
+                    <!-- Page actions -->
+                    <button class="pe-icon-btn" id="peRotLeft" title="Rotate Left"><i
+                            class="fas fa-rotate-left"></i></button>
+                    <button class="pe-icon-btn" id="peRotRight" title="Rotate Right"><i
+                            class="fas fa-rotate-right"></i></button>
+                    <button class="pe-icon-btn danger" id="peDeletePage" title="Remove this page"><i
+                            class="fas fa-trash-can"></i></button>
+                    <div class="pe-header-sep"></div>
+                    <!-- Undo/Redo in editor -->
+                    <button class="pe-icon-btn" id="peUndo" title="Undo edit" disabled><i class="fas fa-undo"
+                            style="font-size:12px;"></i></button>
+                    <button class="pe-icon-btn" id="peRedo" title="Redo edit" disabled><i class="fas fa-redo"
+                            style="font-size:12px;"></i></button>
+                    <div class="pe-header-sep"></div>
+                    <!-- Cancel & Apply -->
+                    <button class="pe-cancel-btn" id="peCancelBtn">Cancel</button>
+                    <button class="pe-done-btn" id="peDone"><i class="fas fa-check"></i> Apply &amp; Done</button>
+                    <button class="pe-icon-btn" id="peClose" title="Close"><i class="fas fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- Tools Sidebar + Canvas Area -->
+            <div class="pe-body">
+                <aside class="pe-sidebar">
+                    <p class="pe-sidebar-label">Tools</p>
+                    <button class="pe-tool-btn active" data-tool="select" title="Select / Pan">
+                        <i class="fas fa-arrow-pointer"></i> <span>Select</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="pen" title="Draw / Pen">
+                        <i class="fas fa-pen-nib"></i> <span>Draw</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="highlight" title="Highlight">
+                        <i class="fas fa-highlighter"></i> <span>Highlight</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="text" title="Add Text">
+                        <i class="fas fa-font"></i> <span>Add Text</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="rect" title="Draw Rectangle">
+                        <i class="fas fa-vector-square"></i> <span>Rectangle</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="circle" title="Draw Circle">
+                        <i class="far fa-circle"></i> <span>Circle</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="arrow" title="Draw Arrow">
+                        <i class="fas fa-arrow-right"></i> <span>Arrow</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="line" title="Draw Line">
+                        <i class="fas fa-minus"></i> <span>Line</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="image" title="Add Image">
+                        <i class="fas fa-image"></i> <span>Image</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="signature" title="Insert Signature">
+                        <i class="fas fa-signature"></i> <span>Signature</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="crop" title="Crop Page">
+                        <i class="fas fa-crop-simple"></i> <span>Crop</span>
+                    </button>
+                    <button class="pe-tool-btn" data-tool="eraser" title="Eraser">
+                        <i class="fas fa-eraser"></i> <span>Eraser</span>
+                    </button>
+
+                    <input type="file" id="peImageUploadInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none;">
+
+                    <div class="pe-sidebar-sep"></div>
+
+                    <!-- Text Options -->
+                    <div id="peTextOptions" style="display:none;flex-direction:column;gap:8px;">
+                        <p class="pe-sidebar-label">Text Options</p>
+                        <label class="pe-option-label">Font
+                            <select id="peFontFamily" class="pe-select">
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier">Courier</option>
+                            </select>
+                        </label>
+                        <label class="pe-option-label">Size
+                            <input type="number" id="peTextSize" value="16" min="6" max="120" class="pe-number-input">
+                        </label>
+                        <label class="pe-option-label">Color
+                            <input type="color" id="peTextColor" value="#000000" class="pe-color-input">
+                        </label>
+                    </div>
+
+                    <!-- Drawing & Shape Options -->
+                    <div id="peColorOptions" style="display:none;flex-direction:column;gap:8px;">
+                        <p class="pe-sidebar-label">Tool Style</p>
+                        <label class="pe-option-label">Color
+                            <input type="color" id="peDrawColor" value="#6C63FF" class="pe-color-input" style="width:100%;">
+                        </label>
+                        <label class="pe-option-label">Thickness: <span id="peStrokeWidthVal" style="color:var(--pe-purple);font-weight:700;">3px</span>
+                            <input type="range" id="peStrokeWidth" min="1" max="24" value="3" class="pe-slider">
+                        </label>
+                        <div id="peFillWrap" style="display:none;">
+                            <label class="pe-checkbox-label">
+                                <input type="checkbox" id="peFillToggle"> Fill Shape
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pe-sidebar-sep"></div>
+
+                    <!-- Annotations List -->
+                    <p class="pe-sidebar-label">Edits on this page</p>
+                    <div class="pe-annot-list" id="peAnnotList">
+                        <div class="pe-annot-empty">No edits yet.</div>
+                    </div>
+                </aside>
+
+                <!-- Canvas Area -->
+                <div class="pe-canvas-area">
+                    <div class="pe-crop-bar" id="peCropConfirmBar">
+                        <span><i class="fas fa-crop-simple"></i> Crop area selected</span>
+                        <button class="pe-crop-apply" id="peCropApply"><i class="fas fa-check"></i> Apply Crop</button>
+                        <button class="pe-crop-cancel" id="peCropCancel"><i class="fas fa-xmark"></i> Cancel</button>
+                    </div>
+
+                    <div class="pe-canvas-wrap" id="peCanvasWrap">
+                        <canvas id="peCanvas"></canvas>
+                        <canvas id="peAnnotCanvas" style="position:absolute;top:0;left:0;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CONFIRMATION MODAL ══ -->
+    <div class="pe-modal-overlay" id="confirmModal">
+        <div class="pe-modal">
+            <div class="pe-modal-icon">🗑️</div>
+            <p id="confirmMsg">Are you sure?</p>
+            <div class="pe-modal-actions">
+                <button class="btn-cancel" id="btnConfirmCancel">Cancel</button>
+                <button class="btn-confirm" id="btnConfirmOk">Yes, Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ KEYBOARD SHORTCUTS CHEAT SHEET MODAL ══ -->
+    <div class="pe-modal-overlay" id="shortcutsModal">
+        <div class="pe-modal shortcuts-modal-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <h3
+                    style="font-size:18px;font-weight:700;color:var(--pe-text-primary);display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-keyboard" style="color:var(--pe-purple);"></i> Keyboard Shortcuts
+                </h3>
+                <button class="pe-icon-btn" id="btnCloseShortcuts" title="Close"><i class="fas fa-xmark"></i></button>
+            </div>
+            <table class="shortcuts-table">
+                <tbody>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Ctrl</kbd> + <kbd class="shortcut-kbd">Z</kbd></td>
+                        <td>Undo previous page or grid action</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Ctrl</kbd> + <kbd class="shortcut-kbd">Shift</kbd> + <kbd
+                                class="shortcut-kbd">Z</kbd> / <kbd class="shortcut-kbd">Ctrl</kbd> + <kbd
+                                class="shortcut-kbd">Y</kbd></td>
+                        <td>Redo action</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Ctrl</kbd> + <kbd class="shortcut-kbd">A</kbd></td>
+                        <td>Select all pages</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Esc</kbd></td>
+                        <td>Deselect all pages / Close active modal</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Delete</kbd> / <kbd class="shortcut-kbd">Backspace</kbd></td>
+                        <td>Remove selected pages</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">R</kbd></td>
+                        <td>Rotate selected pages 90° Right</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Shift</kbd> + <kbd class="shortcut-kbd">R</kbd></td>
+                        <td>Rotate selected pages 90° Left</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Ctrl</kbd> + <kbd class="shortcut-kbd">S</kbd></td>
+                        <td>Save &amp; Download PDF</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">Shift</kbd> + Click</td>
+                        <td>Range select pages</td>
+                    </tr>
+                    <tr>
+                        <td><kbd class="shortcut-kbd">?</kbd></td>
+                        <td>Open this shortcuts cheat sheet</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="text-align:right;">
+                <button class="btn-cancel" id="btnDoneShortcuts">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PAGE NUMBERS MODAL ══ -->
+    <div class="pe-modal-overlay" id="pageNumbersModal">
+        <div class="pe-modal pe-dialog-card">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-arrow-down-1-9" style="color:var(--pe-purple);"></i> Add Page Numbers
+                </div>
+                <button class="pe-icon-btn" id="btnClosePageNumbers"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <!-- Position Selector (3x2 grid) -->
+            <div class="pe-form-row">
+                <label class="pe-form-label">Position on Page</label>
+                <div class="pe-pos-grid">
+                    <button type="button" class="pe-pos-btn" data-pos="top-left">Top Left</button>
+                    <button type="button" class="pe-pos-btn" data-pos="top-center">Top Center</button>
+                    <button type="button" class="pe-pos-btn" data-pos="top-right">Top Right</button>
+                    <button type="button" class="pe-pos-btn" data-pos="bottom-left">Bottom Left</button>
+                    <button type="button" class="pe-pos-btn active" data-pos="bottom-center">Bottom Center</button>
+                    <button type="button" class="pe-pos-btn" data-pos="bottom-right">Bottom Right</button>
+                </div>
+            </div>
+
+            <div class="pe-grid-2col">
+                <!-- Format -->
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="pnFormat">Number Format</label>
+                    <select id="pnFormat" class="pe-form-select">
+                        <option value="page_n_of_total">Page {n} of {total}</option>
+                        <option value="page_n">Page {n}</option>
+                        <option value="n">{n}</option>
+                        <option value="dash_n_dash">- {n} -</option>
+                    </select>
+                </div>
+                <!-- Start Number -->
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="pnStartNum">Start At</label>
+                    <input type="number" id="pnStartNum" class="pe-form-input" value="1" min="1" max="9999">
+                </div>
+            </div>
+
+            <div class="pe-grid-2col">
+                <!-- Font Size -->
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="pnFontSize">Font Size (pt)</label>
+                    <input type="number" id="pnFontSize" class="pe-form-input" value="11" min="6" max="36">
+                </div>
+                <!-- Color -->
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="pnColor">Text Color</label>
+                    <input type="color" id="pnColor" class="pe-color-input" value="#333333" style="width:100%;">
+                </div>
+            </div>
+
+            <!-- Margin from edge -->
+            <div class="pe-form-row">
+                <label class="pe-form-label">Margin from edge: <span id="pnMarginVal" style="color:var(--pe-purple);font-weight:700;">24 pt</span></label>
+                <div class="pe-slider-wrap">
+                    <input type="range" id="pnMargin" class="pe-slider" min="10" max="60" value="24">
+                </div>
+            </div>
+
+            <!-- Target Scope -->
+            <div class="pe-form-row">
+                <label class="pe-form-label">Apply To</label>
+                <div style="display:flex;gap:16px;font-size:13.5px;color:var(--pe-text-primary);">
+                    <label style="cursor:pointer;"><input type="radio" name="pnScope" value="all" checked> All Pages</label>
+                    <label style="cursor:pointer;"><input type="radio" name="pnScope" value="selected" id="pnScopeSelected"> Selected Pages Only</label>
+                </div>
+            </div>
+
+            <!-- Dialog Actions -->
+            <div class="pe-dialog-actions">
+                <button type="button" class="btn-cancel" id="btnRemovePageNumbers" style="color:var(--pe-danger);">Remove Existing</button>
+                <div class="pe-dialog-actions-right">
+                    <button type="button" class="btn-cancel" id="btnCancelPageNumbers">Cancel</button>
+                    <button type="button" class="btn-confirm" id="btnApplyPageNumbers" style="background:var(--pe-primary-gradient);">Apply Page Numbers</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ WATERMARK MODAL ══ -->
+    <div class="pe-modal-overlay" id="watermarkModal">
+        <div class="pe-modal pe-dialog-card">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-stamp" style="color:var(--pe-purple);"></i> Add Watermark
+                </div>
+                <button class="pe-icon-btn" id="btnCloseWatermark"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <!-- Segmented Control: Text vs Image -->
+            <div class="pe-segmented">
+                <button type="button" class="pe-segmented-btn active" id="wmTabBtnText">Text Watermark</button>
+                <button type="button" class="pe-segmented-btn" id="wmTabBtnImage">Image Watermark</button>
+            </div>
+
+            <!-- Text Watermark Section -->
+            <div id="wmSectionText">
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="wmText">Watermark Text</label>
+                    <input type="text" id="wmText" class="pe-form-input" value="CONFIDENTIAL" placeholder="e.g. CONFIDENTIAL, DRAFT">
+                    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+                        <button type="button" class="pe-pos-btn wm-preset-btn" style="padding:4px 8px;">CONFIDENTIAL</button>
+                        <button type="button" class="pe-pos-btn wm-preset-btn" style="padding:4px 8px;">DRAFT</button>
+                        <button type="button" class="pe-pos-btn wm-preset-btn" style="padding:4px 8px;">DO NOT COPY</button>
+                        <button type="button" class="pe-pos-btn wm-preset-btn" style="padding:4px 8px;">SAMPLE</button>
+                    </div>
+                </div>
+
+                <div class="pe-grid-2col">
+                    <div class="pe-form-row">
+                        <label class="pe-form-label" for="wmFontSize">Size: <span id="wmFontSizeVal" style="color:var(--pe-purple);font-weight:700;">48 pt</span></label>
+                        <input type="range" id="wmFontSize" class="pe-slider" min="16" max="96" value="48">
+                    </div>
+                    <div class="pe-form-row">
+                        <label class="pe-form-label" for="wmColor">Text Color</label>
+                        <input type="color" id="wmColor" class="pe-color-input" value="#EF4444" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Watermark Section -->
+            <div id="wmSectionImage" style="display:none;">
+                <div class="pe-form-row">
+                    <label class="pe-form-label">Watermark Image (PNG or JPG)</label>
+                    <label class="pe-image-dropzone" for="wmImageInput">
+                        <i class="fas fa-image" style="font-size:28px;color:var(--pe-purple);display:block;margin-bottom:6px;"></i>
+                        <span style="font-size:13px;font-weight:600;color:var(--pe-text-primary);">Click or drop logo / stamp here</span>
+                        <input type="file" id="wmImageInput" accept="image/png,image/jpeg,image/webp">
+                        <img id="wmImagePreview" class="pe-image-preview" alt="Preview">
+                    </label>
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label">Image Scale: <span id="wmScaleVal" style="color:var(--pe-purple);font-weight:700;">50%</span></label>
+                    <input type="range" id="wmScale" class="pe-slider" min="10" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- Shared Controls: Opacity & Rotation -->
+            <div class="pe-grid-2col">
+                <div class="pe-form-row">
+                    <label class="pe-form-label">Opacity: <span id="wmOpacityVal" style="color:var(--pe-purple);font-weight:700;">25%</span></label>
+                    <input type="range" id="wmOpacity" class="pe-slider" min="5" max="100" value="25">
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label">Rotation: <span id="wmRotationVal" style="color:var(--pe-purple);font-weight:700;">45°</span></label>
+                    <input type="range" id="wmRotation" class="pe-slider" min="-90" max="90" value="45">
+                </div>
+            </div>
+
+            <!-- Target Scope -->
+            <div class="pe-form-row">
+                <label class="pe-form-label">Apply To</label>
+                <div style="display:flex;gap:16px;font-size:13.5px;color:var(--pe-text-primary);">
+                    <label style="cursor:pointer;"><input type="radio" name="wmScope" value="all" checked> All Pages</label>
+                    <label style="cursor:pointer;"><input type="radio" name="wmScope" value="selected" id="wmScopeSelected"> Selected Pages Only</label>
+                </div>
+            </div>
+
+            <!-- Dialog Actions -->
+            <div class="pe-dialog-actions">
+                <button type="button" class="btn-cancel" id="btnRemoveWatermark" style="color:var(--pe-danger);">Remove Existing</button>
+                <div class="pe-dialog-actions-right">
+                    <button type="button" class="btn-cancel" id="btnCancelWatermark">Cancel</button>
+                    <button type="button" class="btn-confirm" id="btnApplyWatermark" style="background:var(--pe-primary-gradient);">Apply Watermark</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ BLANK PAGE MODAL ══ -->
+    <div class="pe-modal-overlay" id="blankPageModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:440px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-file-circle-plus" style="color:var(--pe-purple);"></i> Insert Blank Page
+                </div>
+                <button class="pe-icon-btn" id="btnCloseBlankPage"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <div class="pe-grid-2col">
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="bpSize">Page Size</label>
+                    <select id="bpSize" class="pe-form-select">
+                        <option value="a4">A4 (210 × 297 mm)</option>
+                        <option value="letter">US Letter (8.5 × 11 in)</option>
+                    </select>
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="bpOrientation">Orientation</label>
+                    <select id="bpOrientation" class="pe-form-select">
+                        <option value="portrait">Portrait</option>
+                        <option value="landscape">Landscape</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pe-form-row">
+                <label class="pe-form-label" for="bpPosition">Insert Position</label>
+                <select id="bpPosition" class="pe-form-select">
+                    <option value="after">After Selected Page(s)</option>
+                    <option value="before">Before Selected Page(s)</option>
+                    <option value="end">At End of Document</option>
+                    <option value="start">At Beginning of Document</option>
+                </select>
+            </div>
+
+            <div class="pe-form-row">
+                <label class="pe-form-label" for="bpCount">Number of Blank Pages</label>
+                <input type="number" id="bpCount" class="pe-form-input" value="1" min="1" max="50">
+            </div>
+
+            <div class="pe-dialog-actions" style="justify-content:flex-end;">
+                <button type="button" class="btn-cancel" id="btnCancelBlankPage">Cancel</button>
+                <button type="button" class="btn-confirm" id="btnConfirmInsertBlank" style="background:var(--pe-primary-gradient);">Insert Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SIGNATURE MODAL ══ -->
+    <div class="pe-modal-overlay" id="signatureModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:500px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-signature" style="color:var(--pe-purple);"></i> Add Signature
+                </div>
+                <button class="pe-icon-btn" id="btnCloseSig"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <!-- Segmented: Draw vs Type -->
+            <div class="pe-segmented">
+                <button type="button" class="pe-segmented-btn active" id="sigTabBtnDraw">Draw Signature</button>
+                <button type="button" class="pe-segmented-btn" id="sigTabBtnType">Type Signature</button>
+            </div>
+
+            <!-- Draw Signature View -->
+            <div id="sigViewDraw">
+                <div class="signature-pad-wrap">
+                    <canvas id="sigCanvas" class="signature-canvas"></canvas>
+                    <div class="signature-actions">
+                        <span style="font-size:12px;color:var(--pe-text-muted);">Sign using mouse or finger</span>
+                        <button type="button" class="tb-btn" id="btnClearSig" style="padding:3px 10px;font-size:12px;">
+                            <i class="fas fa-rotate-left"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type Signature View -->
+            <div id="sigViewType" style="display:none;">
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="sigTextInput">Your Full Name</label>
+                    <input type="text" id="sigTextInput" class="pe-form-input" placeholder="Type name e.g. John Doe">
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="sigFontSelect">Handwritten Style</label>
+                    <select id="sigFontSelect" class="pe-form-select">
+                        <option value="'Dancing Script', cursive">Dancing Script</option>
+                        <option value="'Caveat', cursive">Caveat</option>
+                        <option value="'Great Vibes', cursive">Great Vibes</option>
+                    </select>
+                </div>
+                <div class="typed-sig-preview" id="sigTypedPreview" style="font-family:'Dancing Script', cursive;">
+                    John Doe
+                </div>
+            </div>
+
+            <!-- Ink Color Selection -->
+            <div class="pe-form-row" style="margin-top:14px;">
+                <label class="pe-form-label">Ink Color</label>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button type="button" class="pe-pos-btn active sig-color-btn" data-color="#000000" style="padding:6px 14px;border-radius:9999px;">
+                        <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#000000;margin-right:6px;vertical-align:middle;"></span> Black
+                    </button>
+                    <button type="button" class="pe-pos-btn sig-color-btn" data-color="#0047AB" style="padding:6px 14px;border-radius:9999px;">
+                        <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0047AB;margin-right:6px;vertical-align:middle;"></span> Blue
+                    </button>
+                    <button type="button" class="pe-pos-btn sig-color-btn" data-color="#6C63FF" style="padding:6px 14px;border-radius:9999px;">
+                        <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6C63FF;margin-right:6px;vertical-align:middle;"></span> Purple
+                    </button>
+                </div>
+            </div>
+
+            <!-- Saved Signatures (Session) -->
+            <div class="saved-signatures-wrap" id="savedSigsSection" style="display:none;">
+                <label class="pe-form-label">Saved in this session</label>
+                <div class="saved-signatures-list" id="savedSigsList"></div>
+            </div>
+
+            <div class="pe-dialog-actions">
+                <label class="pe-checkbox-label">
+                    <input type="checkbox" id="sigSaveCheck" checked> Remember for this session
+                </label>
+                <div class="pe-dialog-actions-right">
+                    <button type="button" class="btn-cancel" id="btnCancelSig">Cancel</button>
+                    <button type="button" class="btn-confirm" id="btnApplySig" style="background:var(--pe-primary-gradient);">Place Signature</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ BATCH CROP MODAL ══ -->
+    <div class="pe-modal-overlay" id="cropModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:460px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-crop-simple" style="color:var(--pe-purple);"></i> Crop Pages
+                </div>
+                <button class="pe-icon-btn" id="btnCloseCropModal"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <p style="font-size:13px;color:var(--pe-text-secondary);margin-bottom:14px;">
+                Trim page margins uniformly across multiple pages.
+            </p>
+
+            <div class="pe-grid-2col">
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="cropTop">Top Cut (pt)</label>
+                    <input type="number" id="cropTop" class="pe-form-input" value="36" min="0" max="300">
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="cropBottom">Bottom Cut (pt)</label>
+                    <input type="number" id="cropBottom" class="pe-form-input" value="36" min="0" max="300">
+                </div>
+            </div>
+            <div class="pe-grid-2col">
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="cropLeft">Left Cut (pt)</label>
+                    <input type="number" id="cropLeft" class="pe-form-input" value="36" min="0" max="300">
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="cropRight">Right Cut (pt)</label>
+                    <input type="number" id="cropRight" class="pe-form-input" value="36" min="0" max="300">
+                </div>
+            </div>
+
+            <div class="pe-form-row">
+                <label class="pe-form-label">Apply To</label>
+                <div style="display:flex;gap:16px;font-size:13.5px;color:var(--pe-text-primary);">
+                    <label style="cursor:pointer;"><input type="radio" name="cropScope" value="selected" id="cropScopeSelected" checked> Selected Pages</label>
+                    <label style="cursor:pointer;"><input type="radio" name="cropScope" value="all"> All Pages</label>
+                </div>
+            </div>
+
+            <div class="pe-dialog-actions">
+                <button type="button" class="btn-cancel" id="btnResetCropModal" style="color:var(--pe-danger);">Reset Crop</button>
+                <div class="pe-dialog-actions-right">
+                    <button type="button" class="btn-cancel" id="btnCancelCropModal">Cancel</button>
+                    <button type="button" class="btn-confirm" id="btnApplyCropModal" style="background:var(--pe-primary-gradient);">Apply Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ RESIZE PAGES & MARGINS MODAL ══ -->
+    <div class="pe-modal-overlay" id="resizeModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:480px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-up-right-and-down-left-from-center" style="color:var(--pe-purple);"></i> Resize Pages &amp; Margins
+                </div>
+                <button class="pe-icon-btn" id="btnCloseResizeModal"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <div class="pe-grid-2col">
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="rsPageSize">Target Page Size</label>
+                    <select id="rsPageSize" class="pe-form-select">
+                        <option value="a4">A4 (210 × 297 mm)</option>
+                        <option value="letter">US Letter (8.5 × 11 in)</option>
+                        <option value="legal">US Legal (8.5 × 14 in)</option>
+                        <option value="a3">A3 (297 × 420 mm)</option>
+                        <option value="a5">A5 (148 × 210 mm)</option>
+                    </select>
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label" for="rsOrientation">Orientation</label>
+                    <select id="rsOrientation" class="pe-form-select">
+                        <option value="portrait">Portrait</option>
+                        <option value="landscape">Landscape</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pe-form-row">
+                <label class="pe-form-label" for="rsMarginPreset">Margin Padding</label>
+                <select id="rsMarginPreset" class="pe-form-select">
+                    <option value="0">None (0 pt)</option>
+                    <option value="18">Small (18 pt / ~6 mm)</option>
+                    <option value="36" selected>Normal (36 pt / ~12 mm)</option>
+                    <option value="54">Large (54 pt / ~19 mm)</option>
+                </select>
+            </div>
+
+            <div class="pe-form-row">
+                <label class="pe-checkbox-label">
+                    <input type="checkbox" id="rsScaleContent" checked> Scale content to fit inside margins (prevents cutting off)
                 </label>
             </div>
 
-            <!-- Toolbar -->
-            <div class="editor-toolbar">
-                <div class="toolbar-group">
-                    <button class="tb-btn" id="btnSelectAll" title="Select All Pages"><i class="fas fa-check-double"></i> All</button>
-                    <button class="tb-btn" id="btnDeselectAll" title="Deselect All"><i class="fas fa-xmark"></i> None</button>
-                </div>
-                <div class="toolbar-divider"></div>
-                <div class="toolbar-group">
-                    <button class="tb-btn" id="btnMerge" title="Merge all pages into one PDF"><i class="fas fa-layer-group"></i> Merge</button>
-                    <button class="tb-btn" id="btnSplit" title="Split PDF by page ranges"><i class="fas fa-scissors"></i> Split</button>
-                </div>
-                <div class="toolbar-divider"></div>
-                <div class="toolbar-group">
-                    <button class="tb-btn" id="btnRotL" title="Rotate selected pages left" disabled><i class="fas fa-rotate-left"></i> Left</button>
-                    <button class="tb-btn" id="btnRotR" title="Rotate selected pages right" disabled><i class="fas fa-rotate-right"></i> Right</button>
-                    <button class="tb-btn danger" id="btnRemove" title="Remove selected pages" disabled><i class="fas fa-trash-can"></i> Remove</button>
-                    <button class="tb-btn" id="btnExtract" title="Extract selected pages" disabled><i class="fas fa-file-export"></i> Extract</button>
-                </div>
-                <div class="toolbar-divider"></div>
-                <div class="toolbar-group">
-                    <button class="tb-btn" id="btnUndo" title="Undo" disabled><i class="fas fa-rotate-left" style="font-size:11px;"></i> Undo</button>
-                    <button class="tb-btn" id="btnRedo" title="Redo" disabled><i class="fas fa-rotate-right" style="font-size:11px;"></i> Redo</button>
+            <div class="pe-form-row">
+                <label class="pe-form-label">Apply To</label>
+                <div style="display:flex;gap:16px;font-size:13.5px;color:var(--pe-text-primary);">
+                    <label style="cursor:pointer;"><input type="radio" name="rsScope" value="all" checked> All Pages</label>
+                    <label style="cursor:pointer;"><input type="radio" name="rsScope" value="selected" id="rsScopeSelected"> Selected Pages Only</label>
                 </div>
             </div>
 
-            <!-- Split Range Panel -->
-            <div class="split-panel" id="splitPanel">
-                <label><i class="fas fa-scissors"></i> Page ranges:</label>
-                <input type="text" id="splitInput" placeholder="e.g. 1-3, 5, 8-10">
-                <button class="tb-btn success" id="btnSplitGo"><i class="fas fa-play"></i> Split Now</button>
+            <div class="pe-dialog-actions" style="justify-content:flex-end;">
+                <button type="button" class="btn-cancel" id="btnCancelResizeModal">Cancel</button>
+                <button type="button" class="btn-confirm" id="btnApplyResizeModal" style="background:var(--pe-primary-gradient);">Apply Resize</button>
             </div>
-
-            <!-- Progress Panel -->
-            <div class="progress-panel" id="progressPanel">
-                <div class="progress-ring"></div>
-                <p id="progressMsg">Processing…</p>
-                <small>Please wait, working in your browser.</small>
-            </div>
-
-            <!-- Pages Grid -->
-            <div id="pagesSection">
-                <div class="pages-header">
-                    <h4>Pages — click to edit, drag to reorder, check to select</h4>
-                    <span class="pages-counter" id="pageCount">0 pages</span>
-                </div>
-                <div class="pages-grid" id="pagesGrid"></div>
-            </div>
-
-            <!-- Result Panel -->
-            <div class="result-panel" id="resultPanel">
-                <div class="result-icon"><i class="fas fa-check"></i></div>
-                <h3>PDF Ready!</h3>
-                <p id="resultInfo">Your PDF has been processed.</p>
-                <div class="result-actions" id="resultActions"></div>
-            </div>
-
-        </div><!-- /editor-workspace -->
-    </div><!-- /container -->
-</main>
-
-<!-- ══ Sticky Save Bar ══ -->
-<div class="save-bar" id="saveBar" style="display:none;margin:0 auto;width:min(1180px,92%);margin-bottom:24px;">
-    <span class="save-bar-left" id="saveBarInfo">0 pages</span>
-    <button class="btn-save-download" id="btnSave" disabled>
-        <i class="fas fa-floppy-disk"></i> Save &amp; Download PDF
-    </button>
-</div>
-
-<!-- ══════════════════════════════════════════════
-     PAGE EDITOR MODAL
-══════════════════════════════════════════════ -->
-<div class="pe-modal-full" id="pageEditorModal">
-    <div class="pe-modal-inner">
-
-        <!-- Header -->
-        <div class="pe-header">
-            <div class="pe-header-left">
-                <button class="pe-icon-btn" id="pePrevPage" title="Previous page" disabled>
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <span class="pe-page-indicator" id="pePageIndicator">Page 1 of 1</span>
-                <button class="pe-icon-btn" id="peNextPage" title="Next page">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-            <div class="pe-header-center">
-                <span style="font-weight:700;font-size:15px;color:var(--text);">
-                    <i class="fas fa-file-pen" style="color:#FF6B6B;margin-right:6px;"></i> Page Editor
-                </span>
-            </div>
-            <div class="pe-header-right">
-                <!-- Zoom -->
-                <button class="pe-icon-btn" id="peZoomOut" title="Zoom Out"><i class="fas fa-magnifying-glass-minus"></i></button>
-                <span class="pe-zoom-label" id="peZoomLabel">100%</span>
-                <button class="pe-icon-btn" id="peZoomIn" title="Zoom In"><i class="fas fa-magnifying-glass-plus"></i></button>
-                <div class="pe-header-sep"></div>
-                <!-- Page actions -->
-                <button class="pe-icon-btn" id="peRotLeft" title="Rotate Left"><i class="fas fa-rotate-left"></i></button>
-                <button class="pe-icon-btn" id="peRotRight" title="Rotate Right"><i class="fas fa-rotate-right"></i></button>
-                <button class="pe-icon-btn danger" id="peDeletePage" title="Remove this page"><i class="fas fa-trash-can"></i></button>
-                <div class="pe-header-sep"></div>
-                <!-- Undo/Redo in editor -->
-                <button class="pe-icon-btn" id="peUndo" title="Undo edit" disabled><i class="fas fa-undo" style="font-size:12px;"></i></button>
-                <button class="pe-icon-btn" id="peRedo" title="Redo edit" disabled><i class="fas fa-redo" style="font-size:12px;"></i></button>
-                <div class="pe-header-sep"></div>
-                <button class="pe-done-btn" id="peDone"><i class="fas fa-check"></i> Done</button>
-                <button class="pe-icon-btn" id="peClose" title="Close"><i class="fas fa-xmark"></i></button>
-            </div>
-        </div>
-
-        <!-- Tools Sidebar + Canvas -->
-        <div class="pe-body">
-
-            <!-- Left Sidebar: tools -->
-            <aside class="pe-sidebar">
-                <p class="pe-sidebar-label">Tools</p>
-
-                <button class="pe-tool-btn" data-tool="select" title="Select / Pan">
-                    <i class="fas fa-arrow-pointer"></i>
-                    <span>Select</span>
-                </button>
-                <button class="pe-tool-btn" data-tool="text" title="Add Text">
-                    <i class="fas fa-font"></i>
-                    <span>Add Text</span>
-                </button>
-                <button class="pe-tool-btn" data-tool="highlight" title="Highlight">
-                    <i class="fas fa-highlighter"></i>
-                    <span>Highlight</span>
-                </button>
-                <button class="pe-tool-btn" data-tool="rect" title="Draw Rectangle">
-                    <i class="fas fa-vector-square"></i>
-                    <span>Rectangle</span>
-                </button>
-                <button class="pe-tool-btn" data-tool="crop" title="Crop Page">
-                    <i class="fas fa-crop-simple"></i>
-                    <span>Crop</span>
-                </button>
-
-                <div class="pe-sidebar-sep"></div>
-
-                <!-- Text Options -->
-                <div id="peTextOptions" style="display:none;flex-direction:column;gap:8px;">
-                    <p class="pe-sidebar-label">Text Options</p>
-                    <label class="pe-option-label">Font
-                        <select id="peFontFamily" class="pe-select">
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Courier">Courier</option>
-                        </select>
-                    </label>
-                    <label class="pe-option-label">Size
-                        <input type="number" id="peTextSize" value="16" min="6" max="120" class="pe-number-input">
-                    </label>
-                    <label class="pe-option-label">Color
-                        <input type="color" id="peTextColor" value="#000000" class="pe-color-input">
-                    </label>
-                </div>
-
-                <!-- Color option for rect/highlight -->
-                <div id="peColorOptions" style="display:none;flex-direction:column;gap:8px;">
-                    <p class="pe-sidebar-label">Color</p>
-                    <input type="color" id="peDrawColor" value="#6C63FF" class="pe-color-input" style="width:100%;">
-                </div>
-
-                <div class="pe-sidebar-sep"></div>
-
-                <!-- Annotations List -->
-                <p class="pe-sidebar-label">Edits on this page</p>
-                <div class="pe-annot-list" id="peAnnotList">
-                    <div class="pe-annot-empty">No edits yet.</div>
-                </div>
-            </aside>
-
-            <!-- Canvas Area -->
-            <div class="pe-canvas-area">
-                <!-- Crop Confirm Bar -->
-                <div class="pe-crop-bar" id="peCropConfirmBar">
-                    <span><i class="fas fa-crop-simple"></i> Crop area selected</span>
-                    <button class="pe-crop-apply" id="peCropApply"><i class="fas fa-check"></i> Apply Crop</button>
-                    <button class="pe-crop-cancel" id="peCropCancel"><i class="fas fa-xmark"></i> Cancel</button>
-                </div>
-
-                <div class="pe-canvas-wrap" id="peCanvasWrap">
-                    <canvas id="peCanvas"></canvas>
-                    <canvas id="peAnnotCanvas" style="position:absolute;top:0;left:0;"></canvas>
-                </div>
-            </div>
-
-        </div><!-- /pe-body -->
-    </div><!-- /pe-modal-inner -->
-</div><!-- /pageEditorModal -->
-
-<!-- ══ Confirm Modal ══ -->
-<div class="pe-modal-overlay" id="confirmModal">
-    <div class="pe-modal">
-        <div class="pe-modal-icon">🗑️</div>
-        <p id="confirmMsg">Are you sure?</p>
-        <div class="pe-modal-actions">
-            <button class="btn-cancel" id="btnConfirmCancel">Cancel</button>
-            <button class="btn-confirm" id="btnConfirmOk">Yes, Remove</button>
         </div>
     </div>
-</div>
 
-<!-- ══ Toast ══ -->
-<div class="pe-toast" id="peToast"></div>
 
-<!-- Libraries -->
-<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <!-- ══ SESSION RESTORE BANNER ══ -->
+    <div class="pe-session-banner" id="sessionRestoreBanner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9000;background:var(--pe-glass);backdrop-filter:blur(12px);border:1px solid rgba(108,99,255,0.3);border-radius:14px;padding:14px 22px;display:none;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+        <i class="fas fa-history" style="color:var(--pe-purple);font-size:20px;"></i>
+        <div>
+            <strong style="color:var(--pe-text-primary);font-size:14px;">Restore previous session?</strong>
+            <div style="color:var(--pe-text-secondary);font-size:12px;">A previous editing session was found in browser storage.</div>
+        </div>
+        <button class="btn-confirm" id="btnRestoreSession" style="background:var(--pe-primary-gradient);padding:7px 16px;font-size:13px;">Restore</button>
+        <button class="btn-cancel" id="btnDismissRestore" style="padding:7px 14px;font-size:13px;">Dismiss</button>
+    </div>
 
-<script>
-const hamburger = document.getElementById('hamburger');
-const navMenu   = document.getElementById('navMenu');
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
-});
-</script>
-<script type="module" src="../js/navbar.js"></script>
-<script src="../js/pdf-editor.js"></script>
+    <!-- ══ RENAME BEFORE DOWNLOAD MODAL ══ -->
+    <div class="pe-modal-overlay" id="renameModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:420px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-file-signature" style="color:var(--pe-purple);"></i> Rename Before Download
+                </div>
+                <button class="pe-icon-btn" id="btnCloseRenameModal"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="pe-form-row">
+                <label class="pe-form-label" for="renameInput">File name</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="text" id="renameInput" class="pe-form-input" placeholder="document" style="flex:1;">
+                    <span style="color:var(--pe-text-secondary);font-size:14px;">.pdf</span>
+                </div>
+            </div>
+            <div class="pe-dialog-actions" style="justify-content:flex-end;">
+                <button type="button" class="btn-cancel" id="btnCancelRenameModal">Cancel</button>
+                <button type="button" class="btn-confirm" id="btnConfirmRenameModal" style="background:var(--pe-primary-gradient);">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CONVERT MODAL (PDF→Images / Images→PDF) ══ -->
+    <div class="pe-modal-overlay" id="convertModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:520px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-images" style="color:var(--pe-purple);"></i> Convert
+                </div>
+                <button class="pe-icon-btn" id="btnCloseConvertModal"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <div class="pe-segmented" style="margin-bottom:16px;">
+                <button type="button" class="pe-segmented-btn active" id="convTabPdfToImg">PDF → Images</button>
+                <button type="button" class="pe-segmented-btn" id="convTabImgToPdf">Images → PDF</button>
+            </div>
+
+            <!-- PDF→Images section -->
+            <div id="convSectionPdfToImg">
+                <p style="font-size:13px;color:var(--pe-text-secondary);margin-bottom:14px;">
+                    Renders every page as a PNG and downloads a ZIP archive.
+                </p>
+                <div class="pe-form-row">
+                    <label class="pe-form-label">Scale / Resolution</label>
+                    <select id="convPdfScale" class="pe-form-select">
+                        <option value="1">1× — Screen (72 dpi)</option>
+                        <option value="2" selected>2× — Good (144 dpi)</option>
+                        <option value="3">3× — High (216 dpi)</option>
+                    </select>
+                </div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label">Apply To</label>
+                    <div style="display:flex;gap:16px;font-size:13.5px;color:var(--pe-text-primary);">
+                        <label style="cursor:pointer;"><input type="radio" name="convPdfScope" value="all" checked> All Pages</label>
+                        <label style="cursor:pointer;"><input type="radio" name="convPdfScope" value="selected"> Selected Pages</label>
+                    </div>
+                </div>
+                <div class="pe-dialog-actions" style="justify-content:flex-end;">
+                    <button type="button" class="btn-cancel" id="btnCancelConvPdfToImg">Cancel</button>
+                    <button type="button" class="btn-confirm" id="btnConvertPdfToImg" style="background:var(--pe-primary-gradient);">
+                        <i class="fas fa-download"></i> Export as ZIP of PNGs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Images→PDF section -->
+            <div id="convSectionImgToPdf" style="display:none;">
+                <p style="font-size:13px;color:var(--pe-text-secondary);margin-bottom:14px;">
+                    Select one or more images (PNG/JPG). Each image becomes one PDF page.
+                </p>
+                <div class="pe-form-row">
+                    <label class="pe-image-dropzone" for="convImgInput" style="cursor:pointer;">
+                        <i class="fas fa-image" style="font-size:28px;color:var(--pe-purple);display:block;margin-bottom:6px;"></i>
+                        <span style="font-size:13px;font-weight:600;color:var(--pe-text-primary);">Click to pick images (PNG / JPG)</span>
+                        <input type="file" id="convImgInput" accept="image/png,image/jpeg,image/webp" multiple>
+                    </label>
+                </div>
+                <div id="convImgList" style="font-size:13px;color:var(--pe-text-secondary);min-height:24px;"></div>
+                <div class="pe-form-row">
+                    <label class="pe-form-label">Page Size for Images</label>
+                    <select id="convImgPageSize" class="pe-form-select">
+                        <option value="fit">Fit to image size</option>
+                        <option value="a4">A4 (595 × 842 pt)</option>
+                        <option value="letter">US Letter (612 × 792 pt)</option>
+                    </select>
+                </div>
+                <div class="pe-dialog-actions" style="justify-content:flex-end;">
+                    <button type="button" class="btn-cancel" id="btnCancelConvImgToPdf">Cancel</button>
+                    <button type="button" class="btn-confirm" id="btnConvertImgToPdf" style="background:var(--pe-primary-gradient);">
+                        <i class="fas fa-file-pdf"></i> Create PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ ADVANCED SPLIT MODAL ══ -->
+    <div class="pe-modal-overlay" id="advSplitModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:460px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-scissors" style="color:var(--pe-purple);"></i> Advanced Split
+                </div>
+                <button class="pe-icon-btn" id="btnCloseAdvSplitModal"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <div class="pe-form-row">
+                <label class="pe-form-label">Split Mode</label>
+                <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--pe-text-primary);">
+                    <label style="cursor:pointer;"><input type="radio" name="advSplitMode" value="everyN" checked> Every N pages</label>
+                    <label style="cursor:pointer;"><input type="radio" name="advSplitMode" value="burst"> Burst — one PDF per page</label>
+                    <label style="cursor:pointer;"><input type="radio" name="advSplitMode" value="ranges"> Custom ranges (comma-separated)</label>
+                </div>
+            </div>
+
+            <div class="pe-form-row" id="advSplitEveryNRow">
+                <label class="pe-form-label" for="advSplitN">Pages per chunk</label>
+                <input type="number" id="advSplitN" class="pe-form-input" value="1" min="1" max="9999">
+            </div>
+
+            <div class="pe-form-row" id="advSplitRangesRow" style="display:none;">
+                <label class="pe-form-label" for="advSplitRanges">Ranges (e.g. 1-3, 4-6)</label>
+                <input type="text" id="advSplitRanges" class="pe-form-input" placeholder="1-3, 4-6, 7-10">
+            </div>
+
+            <div class="pe-dialog-actions" style="justify-content:flex-end;">
+                <button type="button" class="btn-cancel" id="btnCancelAdvSplitModal">Cancel</button>
+                <button type="button" class="btn-confirm" id="btnApplyAdvSplitModal" style="background:var(--pe-primary-gradient);">
+                    <i class="fas fa-scissors"></i> Split Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PASSWORD MODAL ══ -->
+    <div class="pe-modal-overlay" id="passwordModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:440px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-lock" style="color:var(--pe-purple);"></i> Password Protect PDF
+                </div>
+                <button class="pe-icon-btn" id="btnClosePasswordModal"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <p style="font-size:13px;color:var(--pe-text-secondary);margin-bottom:14px;">
+                Set a password required to open the PDF. Encryption is applied on download.
+            </p>
+
+            <div class="pe-form-row">
+                <label class="pe-form-label" for="pdfUserPassword">Open Password</label>
+                <input type="password" id="pdfUserPassword" class="pe-form-input" placeholder="Leave blank for no open-password" autocomplete="new-password">
+            </div>
+            <div class="pe-form-row">
+                <label class="pe-form-label" for="pdfOwnerPassword">Owner / Permissions Password</label>
+                <input type="password" id="pdfOwnerPassword" class="pe-form-input" placeholder="Optional — restricts printing & editing" autocomplete="new-password">
+            </div>
+            <div class="pe-form-row">
+                <label class="pe-checkbox-label">
+                    <input type="checkbox" id="pdfAllowPrint" checked> Allow printing
+                </label>
+                <label class="pe-checkbox-label" style="margin-top:6px;">
+                    <input type="checkbox" id="pdfAllowCopy" checked> Allow copying text
+                </label>
+            </div>
+
+            <div class="pe-dialog-actions" style="justify-content:flex-end;">
+                <button type="button" class="btn-cancel" id="btnCancelPasswordModal">Cancel</button>
+                <button type="button" class="btn-confirm" id="btnApplyPasswordModal" style="background:var(--pe-primary-gradient);">
+                    <i class="fas fa-lock"></i> Save & Download Protected PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ EXTRACT TEXT MODAL ══ -->
+    <div class="pe-modal-overlay" id="extractTextModal">
+        <div class="pe-modal pe-dialog-card" style="max-width:580px;">
+            <div class="pe-dialog-header">
+                <div class="pe-dialog-title">
+                    <i class="fas fa-file-lines" style="color:var(--pe-purple);"></i> Extract Text
+                </div>
+                <button class="pe-icon-btn" id="btnCloseExtractTextModal"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <div class="pe-form-row">
+                <label class="pe-form-label">Extract From</label>
+                <div style="display:flex;gap:16px;font-size:13.5px;color:var(--pe-text-primary);">
+                    <label style="cursor:pointer;"><input type="radio" name="extractTextScope" value="all" checked> All Pages</label>
+                    <label style="cursor:pointer;"><input type="radio" name="extractTextScope" value="selected"> Selected Pages</label>
+                </div>
+            </div>
+
+            <div style="margin-bottom:10px;display:flex;gap:8px;">
+                <button type="button" class="btn-confirm" id="btnRunExtractText" style="background:var(--pe-primary-gradient);padding:7px 16px;font-size:13px;">
+                    <i class="fas fa-wand-magic-sparkles"></i> Extract Text
+                </button>
+                <button type="button" class="tb-btn" id="btnCopyExtractedText" style="font-size:13px;" disabled>
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+                <button type="button" class="tb-btn" id="btnDownloadExtractedText" style="font-size:13px;" disabled>
+                    <i class="fas fa-download"></i> Download .txt
+                </button>
+            </div>
+
+            <textarea id="extractedTextArea" class="pe-form-input" rows="12"
+                style="width:100%;resize:vertical;font-family:monospace;font-size:12px;line-height:1.6;"
+                placeholder="Extracted text will appear here…" readonly></textarea>
+
+            <div class="pe-dialog-actions" style="justify-content:flex-end;margin-top:10px;">
+                <button type="button" class="btn-cancel" id="btnCloseExtractTextModalBottom">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TOAST NOTIFICATION ══ -->
+    <div class="pe-toast" id="peToast"></div>
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('navMenu');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+    </script>
+    <script type="module" src="../js/navbar.js"></script>
+    <script src="../js/pdf-editor.js"></script>
 
 </body>
+
 </html>
