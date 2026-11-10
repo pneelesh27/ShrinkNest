@@ -464,7 +464,8 @@
                 <!-- Size Control -->
                 <div class="control-group" id="sizeControlGroup" style="display: none;">
                     <label for="targetSizeInput">Target Size (KB)</label>
-                    <input type="number" id="targetSizeInput" min="1" placeholder="e.g. 150" value="150" style="padding: 12px; border-radius: 10px; border: 1px solid #ddd; outline: none; width: 100%;">
+                    <input type="number" id="targetSizeInput" min="20" placeholder="e.g. 150" value="150" style="padding: 12px; border-radius: 10px; border: 1px solid #ddd; outline: none; width: 100%;">
+                    <span id="targetSizeError" style="color: #dc2626; font-size: 12.5px; margin-top: 5px; display: none; font-weight: 500;"></span>
                 </div>
             </div>
 
@@ -476,6 +477,16 @@
                     class="btn">
 
                     Compress PDF
+
+                </button>
+
+                <button
+                    id="cancelCompressBtn"
+                    class="btn btn-outline"
+                    type="button"
+                    style="display:none;">
+
+                    Cancel
 
                 </button>
 
@@ -500,6 +511,8 @@
 
                 </div>
 
+                <p id="progressStatus" style="font-size: 13px; color: #5a6380; margin-top: 8px; text-align: center; display: none;"></p>
+
             </div>
 
             <!-- Result -->
@@ -510,6 +523,9 @@
 
                 <h3>Compression Result</h3>
 
+                <p id="resultSummary" style="font-size: 14px; font-weight: 700; color: #2d2472; margin-bottom: 10px; display: none;"></p>
+                <p id="resultMessage" style="font-size: 13px; color: #4338ca; margin-bottom: 10px; display: none;"></p>
+
                 <p>
                     <strong>Compressed Size:</strong>
                     <span id="compressedSize">0 KB</span>
@@ -519,6 +535,8 @@
                     <strong>Space Saved:</strong>
                     <span id="savedPercent">0%</span>
                 </p>
+
+                <p id="rasterizeNote" style="font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; display: none;"></p>
 
             </div>
 
