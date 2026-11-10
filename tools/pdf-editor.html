@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         crossorigin="anonymous">
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/pdf-editor.css">
+    <link rel="stylesheet" href="../css/pdf-editor.css?v=3.0">
 </head>
 
 <body>
@@ -97,19 +97,24 @@
             <!-- Editor Workspace -->
             <div class="editor-workspace" id="editorWorkspace">
 
-                <!-- File Bar (Multi-file Glass Card) -->
-                <div class="file-bar" id="fileBar" role="region" aria-label="Loaded Document Info">
+                <!-- File Bar: Modern Studio File Card -->
+                <div class="file-bar" id="fileBar" role="region" aria-label="Loaded Document Information">
                     <div class="file-bar-main">
                         <div class="file-bar-left">
-                            <div class="file-icon" aria-hidden="true"><i class="fas fa-file-pdf"></i></div>
+                            <div class="file-icon-badge" aria-hidden="true">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
                             <div class="file-text-wrap">
-                                <h3 id="fileLabel" class="file-title-truncate" title="document.pdf">document.pdf</h3>
-                                <p id="fileMeta">0 pages</p>
+                                <div class="file-name-row">
+                                    <h3 id="fileLabel" class="file-title-truncate" title="document.pdf">document.pdf</h3>
+                                    <span class="file-status-pill" id="fileStatusPill">Ready</span>
+                                </div>
+                                <p id="fileMeta" class="file-meta-sub">0 pages • 0 KB</p>
                             </div>
                         </div>
                         <div class="file-bar-actions">
-                            <button type="button" class="btn-remove-current-file" id="btnRemoveCurrentFile" title="Remove loaded document" aria-label="Remove document">
-                                <i class="fas fa-trash-can" aria-hidden="true"></i>
+                            <button type="button" class="btn-remove-current-file" id="btnRemoveCurrentFile" title="Clear this document and remove all pages" aria-label="Clear document">
+                                <i class="fas fa-trash-can" aria-hidden="true"></i> <span>Clear</span>
                             </button>
                             <button type="button" class="btn-toggle-files" id="btnToggleFiles" style="display:none;" aria-expanded="false">
                                 <i class="fas fa-layer-group" aria-hidden="true"></i> <span id="filesCountText">Files (1)</span> <i class="fas fa-chevron-down" id="filesChevron" aria-hidden="true"></i>
@@ -124,10 +129,10 @@
                     <div class="files-list-container" id="filesListContainer"></div>
                 </div>
 
-                <!-- Sticky Top Toolbar (Organized into Labeled Semantic Groups) -->
+                <!-- Studio Top Toolbar -->
                 <div class="sticky-toolbar" id="editorToolbar" role="toolbar" aria-label="PDF Editor Toolbar">
 
-                    <!-- Group 1: Selection -->
+                    <!-- Section 1: Selection -->
                     <div class="toolbar-section" data-group="selection">
                         <span class="toolbar-section-label">Selection</span>
                         <div class="toolbar-group">
@@ -138,9 +143,9 @@
                                 <i class="fas fa-xmark" aria-hidden="true"></i> <span>None</span>
                             </button>
                             <div class="tb-range-group" title="Select pages by range e.g. 1-3, 5, 8-10" style="position:relative;">
-                                <input type="text" id="tbRangeInput" placeholder="1-3, 5" class="tb-range-input" aria-label="Page range to select">
-                                <button type="button" class="tb-range-btn" id="btnRangeSelect" title="Select page range">Select</button>
-                                <button type="button" class="tb-range-btn" id="btnRangePresets" title="Selection Presets (Even, Odd, Invert)" aria-label="Selection Presets"><i class="fas fa-ellipsis-vertical" aria-hidden="true"></i></button>
+                                <input type="text" id="tbRangeInput" placeholder="1-3, 5" class="tb-range-input" aria-label="Page Range Selection">
+                                <button type="button" class="tb-range-btn" id="btnRangeSelect" title="Apply Range">Select</button>
+                                <button type="button" class="tb-range-btn" id="btnRangePresets" title="Presets (Even, Odd, Invert)" aria-label="Selection Presets"><i class="fas fa-ellipsis-vertical" aria-hidden="true"></i></button>
                                 <div class="range-presets-menu" id="rangePresetsMenu" style="display:none;" role="menu">
                                     <button type="button" class="range-preset-item" id="presetEven" role="menuitem"><i class="fas fa-list-ol" aria-hidden="true"></i> Even Pages (2, 4, 6…)</button>
                                     <button type="button" class="range-preset-item" id="presetOdd" role="menuitem"><i class="fas fa-list-ol" aria-hidden="true"></i> Odd Pages (1, 3, 5…)</button>
@@ -153,15 +158,15 @@
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
-                    <!-- Group 2: Page Actions (Context-sensitive on selection) -->
-                    <div class="toolbar-section" data-group="page-actions">
+                    <!-- Section 2: Page Actions (Enabled on Selection) -->
+                    <div class="toolbar-section" data-group="page-actions" id="tbPageActionsSection">
                         <span class="toolbar-section-label">Page Actions</span>
                         <div class="toolbar-group">
                             <button class="tb-btn" id="btnRotL" title="Rotate selected left (Shift+R)" aria-label="Rotate Left" disabled>
-                                <i class="fas fa-rotate-left" aria-hidden="true"></i> <span>Rotate Left</span>
+                                <i class="fas fa-rotate-left" aria-hidden="true"></i> <span>Left</span>
                             </button>
                             <button class="tb-btn" id="btnRotR" title="Rotate selected right (R)" aria-label="Rotate Right" disabled>
-                                <i class="fas fa-rotate-right" aria-hidden="true"></i> <span>Rotate Right</span>
+                                <i class="fas fa-rotate-right" aria-hidden="true"></i> <span>Right</span>
                             </button>
                             <button class="tb-btn" id="btnDuplicate" title="Duplicate selected page(s)" aria-label="Duplicate Selected Pages" disabled>
                                 <i class="fas fa-copy" aria-hidden="true"></i> <span>Duplicate</span>
@@ -180,7 +185,7 @@
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
-                    <!-- Group 3: Document Tools -->
+                    <!-- Section 3: Document Tools (Primary + More Dropdown) -->
                     <div class="toolbar-section" data-group="doc-tools">
                         <span class="toolbar-section-label">Document Tools</span>
                         <div class="toolbar-group">
@@ -190,45 +195,45 @@
                             <button class="tb-btn" id="btnSplit" title="Split PDF by page ranges" aria-label="Split PDF">
                                 <i class="fas fa-scissors" aria-hidden="true"></i> <span>Split</span>
                             </button>
-                            <button class="tb-btn" id="btnAdvSplitModal" title="Advanced Split Options (Burst, Fixed Chunks)" aria-label="Advanced Split">
-                                <i class="fas fa-diagram-project" aria-hidden="true"></i> <span>Split+</span>
-                            </button>
                             <button class="tb-btn" id="btnPageNumbers" title="Add Page Numbers" aria-label="Add Page Numbers">
                                 <i class="fas fa-arrow-down-1-9" aria-hidden="true"></i> <span>Page #</span>
                             </button>
                             <button class="tb-btn" id="btnWatermark" title="Add Text or Image Watermark" aria-label="Add Watermark">
                                 <i class="fas fa-stamp" aria-hidden="true"></i> <span>Watermark</span>
                             </button>
-                            <button class="tb-btn" id="btnCropModal" title="Crop Pages" aria-label="Crop Pages">
-                                <i class="fas fa-crop-simple" aria-hidden="true"></i> <span>Crop</span>
-                            </button>
-                            <button class="tb-btn" id="btnResizeModal" title="Resize Pages &amp; Margins" aria-label="Resize Pages">
-                                <i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i> <span>Resize</span>
-                            </button>
-                            <button class="tb-btn" id="btnConvertModal" title="Convert PDF to Images (ZIP)" aria-label="Convert PDF to Images">
-                                <i class="fas fa-images" aria-hidden="true"></i> <span>Convert</span>
-                            </button>
-                            <button class="tb-btn" id="btnExtractTextModal" title="Extract Text from PDF" aria-label="Extract Text">
-                                <i class="fas fa-file-lines" aria-hidden="true"></i> <span>Text</span>
-                            </button>
+
+                            <!-- More Tools Dropdown Menu -->
+                            <div class="tb-dropdown-wrap" style="position:relative;">
+                                <button type="button" class="tb-btn tb-more-btn" id="btnMoreTools" title="More Document Tools" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> <span>More</span> <i class="fas fa-chevron-down" style="font-size:10px;margin-left:2px;" aria-hidden="true"></i>
+                                </button>
+                                <div class="tb-dropdown-menu" id="moreToolsMenu" style="display:none;" role="menu">
+                                    <button type="button" class="tb-dropdown-item" id="btnCropModal" role="menuitem">
+                                        <i class="fas fa-crop-simple" aria-hidden="true"></i> <span>Crop Pages</span>
+                                    </button>
+                                    <button type="button" class="tb-dropdown-item" id="btnResizeModal" role="menuitem">
+                                        <i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i> <span>Resize Pages &amp; Margins</span>
+                                    </button>
+                                    <button type="button" class="tb-dropdown-item" id="btnConvertModal" role="menuitem">
+                                        <i class="fas fa-images" aria-hidden="true"></i> <span>Convert PDF to Images (ZIP)</span>
+                                    </button>
+                                    <button type="button" class="tb-dropdown-item" id="btnAdvSplitModal" role="menuitem">
+                                        <i class="fas fa-diagram-project" aria-hidden="true"></i> <span>Advanced Split Options</span>
+                                    </button>
+                                    <button type="button" class="tb-dropdown-item" id="btnPasswordModal" role="menuitem">
+                                        <i class="fas fa-lock" aria-hidden="true"></i> <span>Password Protect &amp; Encrypt</span>
+                                    </button>
+                                    <button type="button" class="tb-dropdown-item" id="btnExtractTextModal" role="menuitem">
+                                        <i class="fas fa-file-lines" aria-hidden="true"></i> <span>Extract Text from PDF</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
-                    <!-- Group 4: Security -->
-                    <div class="toolbar-section" data-group="security">
-                        <span class="toolbar-section-label">Security</span>
-                        <div class="toolbar-group">
-                            <button class="tb-btn" id="btnPasswordModal" title="Password Protect PDF" aria-label="Password Protect PDF">
-                                <i class="fas fa-lock" aria-hidden="true"></i> <span>Password</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="toolbar-divider" aria-hidden="true"></div>
-
-                    <!-- Group 5: History & View -->
+                    <!-- Section 4: History & View Controls -->
                     <div class="toolbar-section" data-group="history-view">
                         <span class="toolbar-section-label">History &amp; View</span>
                         <div class="toolbar-group">
@@ -260,7 +265,7 @@
 
                 </div>
 
-                <!-- Contextual Action Bar (Smoothly appears when 1+ pages are selected) -->
+                <!-- Floating Contextual Action Bar (Shows when 1+ pages are selected) -->
                 <div class="contextual-action-bar" id="contextualActionBar" style="display:none;" role="region" aria-label="Selection Actions">
                     <div class="cab-left">
                         <span class="cab-count" id="cabCount">0 selected</span>
@@ -289,62 +294,111 @@
                     <small>Please wait, working entirely in your browser.</small>
                 </div>
 
-                <!-- Pages Grid Section -->
-                <section id="pagesSection" aria-label="Document Pages">
-                    <div class="pages-header">
-                        <h4>
-                            <i class="fas fa-grip" aria-hidden="true"></i> <span>Pages</span>
-                            <span class="pages-subhint">— click page to edit, drag to reorder, check to select</span>
-                        </h4>
-                        <span class="pages-counter glass-pill" id="pageCount" aria-live="polite">0 pages</span>
-                    </div>
-
-                    <!-- Companion Details Panel (Shown when 1-2 pages loaded to gracefully balance space) -->
-                    <div class="page-companion-panel" id="pageCompanionPanel" style="display:none;">
-                        <div class="companion-card companion-details">
-                            <div class="companion-header">
-                                <h5><i class="fas fa-circle-info" aria-hidden="true"></i> Page Details</h5>
-                                <span class="companion-tag" id="compPageTag">Page 1</span>
-                            </div>
-                            <div class="companion-meta" id="compMeta">
-                                <div class="meta-item"><span>Dimensions</span> <strong id="compDimensions">A4 (Standard)</strong></div>
-                                <div class="meta-item"><span>Rotation</span> <strong id="compRotation">0°</strong></div>
-                                <div class="meta-item"><span>Annotations</span> <strong id="compAnnots">0 edits</strong></div>
-                            </div>
-                            <div class="companion-actions">
-                                <button type="button" class="tb-btn" id="compRotL"><i class="fas fa-rotate-left" aria-hidden="true"></i> Left</button>
-                                <button type="button" class="tb-btn" id="compRotR"><i class="fas fa-rotate-right" aria-hidden="true"></i> Right</button>
-                                <button type="button" class="tb-btn" id="compEdit"><i class="fas fa-pen-to-square" aria-hidden="true"></i> Open Editor</button>
-                                <button type="button" class="tb-btn danger" id="compDelete"><i class="fas fa-trash-can" aria-hidden="true"></i> Remove</button>
-                            </div>
+                <!-- Studio Workspace Layout (Two-Column Desktop: Pages Grid + Page Inspector) -->
+                <div class="studio-workspace-layout" id="studioWorkspaceLayout">
+                    <!-- Left Column: Pages Grid -->
+                    <section class="studio-pages-column" id="pagesSection" aria-label="Document Pages">
+                        <div class="pages-header">
+                            <h4>
+                                <i class="fas fa-grip" aria-hidden="true"></i> <span>Document Pages</span>
+                                <span class="pages-subhint">— drag to reorder, click to select / edit</span>
+                            </h4>
+                            <span class="pages-counter glass-pill" id="pageCount" aria-live="polite">0 pages</span>
                         </div>
 
-                        <div class="companion-card companion-dropzone" id="companionDropzone">
-                            <i class="fas fa-file-circle-plus" aria-hidden="true"></i>
-                            <h5>Add More Pages or PDFs</h5>
-                            <p>Drag files here or append a clean blank page</p>
-                            <div class="companion-drop-btns">
-                                <label class="btn-choose btn-sm" for="addMoreInput"><i class="fas fa-plus" aria-hidden="true"></i> Add PDF</label>
-                                <button type="button" class="tb-btn" id="compAddBlank"><i class="fas fa-file-circle-plus" aria-hidden="true"></i> Blank Page</button>
+                        <!-- Pages Grid -->
+                        <div class="pages-grid" id="pagesGrid" data-zoom="md" data-view="grid" role="list"></div>
+
+                        <!-- Drop More PDFs Zone -->
+                        <label class="drop-more-zone" id="dropMoreZone" for="addMoreInput" title="Drop more PDFs or click to add">
+                            <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
+                            <div class="drop-more-text">
+                                <strong>Append more files to this document</strong>
+                                <span>Drop PDFs anywhere or click here to browse</span>
+                            </div>
+                        </label>
+
+                        <div class="pages-empty-state" id="pagesEmptyState" style="display:none;">
+                            <div class="empty-icon" aria-hidden="true"><i class="fas fa-file-circle-xmark"></i></div>
+                            <h3>No pages in this document</h3>
+                            <p>All pages were removed or no document is loaded.</p>
+                            <label class="btn-choose" for="addMoreInput"><i class="fas fa-plus" aria-hidden="true"></i> Add Pages</label>
+                        </div>
+                    </section>
+
+                    <!-- Right Column: Interactive Page Inspector Panel -->
+                    <aside class="studio-inspector-column" id="pageInspectorPanel" aria-label="Page Properties Inspector">
+                        <div class="inspector-card">
+                            <div class="inspector-header">
+                                <h5><i class="fas fa-sliders" aria-hidden="true"></i> <span>Page Inspector</span></h5>
+                                <span class="inspector-badge" id="inspectorPageBadge">Page 1</span>
+                            </div>
+
+                            <!-- Page Preview Container -->
+                            <div class="inspector-preview-box">
+                                <div class="inspector-preview-inner" id="inspectorPreviewInner">
+                                    <div class="inspector-preview-placeholder">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                        <span>Click a page to preview</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Metadata Grid -->
+                            <div class="inspector-metadata-list">
+                                <div class="insp-meta-row">
+                                    <span class="insp-meta-label">Dimensions</span>
+                                    <strong class="insp-meta-val" id="inspDimensions">A4 (595 × 842 pt)</strong>
+                                </div>
+                                <div class="insp-meta-row">
+                                    <span class="insp-meta-label">Orientation</span>
+                                    <strong class="insp-meta-val" id="inspOrientation">Portrait</strong>
+                                </div>
+                                <div class="insp-meta-row">
+                                    <span class="insp-meta-label">Rotation</span>
+                                    <strong class="insp-meta-val" id="inspRotation">0°</strong>
+                                </div>
+                                <div class="insp-meta-row">
+                                    <span class="insp-meta-label">Annotations</span>
+                                    <strong class="insp-meta-val" id="inspEdits">0 edits</strong>
+                                </div>
+                            </div>
+
+                            <!-- Inspector Action Buttons -->
+                            <div class="inspector-actions-grid">
+                                <button type="button" class="insp-action-btn" id="inspRotL" title="Rotate Left 90°">
+                                    <i class="fas fa-rotate-left" aria-hidden="true"></i> <span>Rotate Left</span>
+                                </button>
+                                <button type="button" class="insp-action-btn" id="inspRotR" title="Rotate Right 90°">
+                                    <i class="fas fa-rotate-right" aria-hidden="true"></i> <span>Rotate Right</span>
+                                </button>
+                                <button type="button" class="insp-action-btn insp-primary-action" id="inspOpenEditor" title="Open Full Page Editor">
+                                    <i class="fas fa-pen-to-square" aria-hidden="true"></i> <span>Open Page Editor</span>
+                                </button>
+                                <button type="button" class="insp-action-btn" id="inspDuplicate" title="Duplicate Page">
+                                    <i class="fas fa-copy" aria-hidden="true"></i> <span>Duplicate</span>
+                                </button>
+                                <button type="button" class="insp-action-btn insp-danger-action" id="inspDelete" title="Remove Page">
+                                    <i class="fas fa-trash-can" aria-hidden="true"></i> <span>Remove Page</span>
+                                </button>
                             </div>
                         </div>
-                    </div>
+                    </aside>
+                </div>
 
-                    <div class="pages-grid" id="pagesGrid" data-zoom="md" data-view="grid" role="list"></div>
-
-                    <!-- Drop More PDFs Zone at bottom of grid -->
-                    <label class="drop-more-zone" id="dropMoreZone" for="addMoreInput" title="Drop more PDFs or click to add">
-                        <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
-                        <span>Drop more PDFs here to merge or append</span>
-                    </label>
-
-                    <div class="pages-empty-state" id="pagesEmptyState" style="display:none;">
-                        <div class="empty-icon" aria-hidden="true"><i class="fas fa-file-circle-xmark"></i></div>
-                        <h3>No pages in this document</h3>
-                        <p>All pages were removed or no document is loaded.</p>
-                        <label class="btn-choose" for="addMoreInput"><i class="fas fa-plus" aria-hidden="true"></i> Add Pages</label>
-                    </div>
-                </section>
+                <!-- Fallback container keeping companion IDs accessible for backwards compatibility -->
+                <div style="display:none;" id="pageCompanionPanel">
+                    <span id="compPageTag"></span>
+                    <strong id="compDimensions"></strong>
+                    <strong id="compRotation"></strong>
+                    <strong id="compAnnots"></strong>
+                    <button id="compRotL"></button>
+                    <button id="compRotR"></button>
+                    <button id="compEdit"></button>
+                    <button id="compDelete"></button>
+                    <button id="compAddBlank"></button>
+                    <div id="companionDropzone"></div>
+                </div>
 
                 <!-- Result Panel (Clean status card with close button) -->
                 <div class="result-panel" id="resultPanel" role="status" aria-live="polite">
@@ -1257,7 +1311,7 @@
         });
     </script>
     <script type="module" src="../js/navbar.js"></script>
-    <script src="../js/pdf-editor.js"></script>
+    <script src="../js/pdf-editor.js?v=3.0"></script>
 
 </body>
 

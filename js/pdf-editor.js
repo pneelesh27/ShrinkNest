@@ -926,6 +926,11 @@ async function renderThumb(idx) {
         wrap.classList.remove('page-thumb-loading');
         wrap.innerHTML = '';
         wrap.appendChild(canvas);
+
+        const curActiveIdx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+        if (pageIdx === curActiveIdx) {
+            updateInspector();
+        }
     } catch (e) {
         console.warn('Render thumb error:', e);
         if (wrap) {
@@ -1184,6 +1189,69 @@ if (compDelete) compDelete.addEventListener('click', () => {
     }
 });
 if (compAddBlank) compAddBlank.addEventListener('click', insertBlankPage);
+
+// Studio Dropdown Menu Wiring
+const btnMoreTools = document.getElementById('btnMoreTools');
+const moreToolsMenu = document.getElementById('moreToolsMenu');
+if (btnMoreTools && moreToolsMenu) {
+    btnMoreTools.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = moreToolsMenu.classList.contains('show');
+        if (isOpen) {
+            moreToolsMenu.classList.remove('show');
+            moreToolsMenu.style.display = 'none';
+            btnMoreTools.setAttribute('aria-expanded', 'false');
+        } else {
+            moreToolsMenu.classList.add('show');
+            moreToolsMenu.style.display = 'flex';
+            btnMoreTools.setAttribute('aria-expanded', 'true');
+        }
+    });
+    moreToolsMenu.addEventListener('click', () => {
+        moreToolsMenu.classList.remove('show');
+        moreToolsMenu.style.display = 'none';
+        btnMoreTools.setAttribute('aria-expanded', 'false');
+    });
+    document.addEventListener('click', (e) => {
+        if (!moreToolsMenu.contains(e.target) && e.target !== btnMoreTools) {
+            moreToolsMenu.classList.remove('show');
+            moreToolsMenu.style.display = 'none';
+            btnMoreTools.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Studio Inspector Action Buttons Wiring
+const inspRotL = document.getElementById('inspRotL');
+const inspRotR = document.getElementById('inspRotR');
+const inspOpenEditor = document.getElementById('inspOpenEditor');
+const inspDuplicate = document.getElementById('inspDuplicate');
+const inspDelete = document.getElementById('inspDelete');
+
+if (inspRotL) inspRotL.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) rotateSinglePage(idx, -90);
+});
+if (inspRotR) inspRotR.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) rotateSinglePage(idx, 90);
+});
+if (inspOpenEditor) inspOpenEditor.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) openPageEditor(idx);
+});
+if (inspDuplicate) inspDuplicate.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) duplicatePages([idx]);
+});
+if (inspDelete) inspDelete.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) {
+        showConfirm(`Remove Page ${idx + 1}?`, 'You can restore it anytime with Undo.', () => {
+            removePages([idx]);
+        });
+    }
+});
 
 // File Bar Remove Current File
 const btnRemoveCurrentFile = document.getElementById('btnRemoveCurrentFile');
@@ -3048,6 +3116,64 @@ function updateToolbarState() {
 
     updateSaveBarInfo();
     updateCompanionPanel();
+    updateInspector();
+}
+
+function updateInspector() {
+    const panel = document.getElementById('pageInspectorPanel');
+    if (!panel) return;
+
+    if (state.pages.length === 0) {
+        panel.style.display = 'none';
+        return;
+    }
+    panel.style.display = '';
+
+    const targetIdx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    const pg = state.pages[targetIdx];
+    if (!pg) return;
+
+    const badge = document.getElementById('inspectorPageBadge');
+    const dimEl = document.getElementById('inspDimensions');
+    const orientEl = document.getElementById('inspOrientation');
+    const rotEl = document.getElementById('inspRotation');
+    const editsEl = document.getElementById('inspEdits');
+    const inner = document.getElementById('inspectorPreviewInner');
+
+    if (badge) badge.textContent = `Page ${targetIdx + 1} of ${state.pages.length}`;
+    if (dimEl) dimEl.textContent = pg.isBlank ? `${pg.blankWidth || 595} × ${pg.blankHeight || 842} pt` : 'A4 (595 × 842 pt)';
+    const normRot = ((pg.rotation || 0) % 360 + 360) % 360;
+    if (rotEl) rotEl.textContent = `${normRot}°`;
+    if (orientEl) orientEl.textContent = (normRot % 180 === 0) ? 'Portrait' : 'Landscape';
+    const annCount = (pg.annotations || []).length;
+    if (editsEl) editsEl.textContent = `${annCount} edit${annCount !== 1 ? 's' : ''}`;
+
+    if (inner) {
+        const cacheKey = `${pg.pdfIndex}_${pg.pageIndex}_${pg.rotation}`;
+        const cached = thumbCache.get(cacheKey);
+        if (cached && cached.width > 0) {
+            inner.innerHTML = '';
+            const clone = document.createElement('canvas');
+            clone.width = cached.width;
+            clone.height = cached.height;
+            const ctx = clone.getContext('2d');
+            ctx.drawImage(cached, 0, 0);
+            inner.appendChild(clone);
+        } else {
+            const cardCanvas = document.querySelector(`.page-card[data-index="${targetIdx}"] canvas`);
+            if (cardCanvas && cardCanvas.width > 0) {
+                inner.innerHTML = '';
+                const clone = document.createElement('canvas');
+                clone.width = cardCanvas.width;
+                clone.height = cardCanvas.height;
+                const ctx = clone.getContext('2d');
+                ctx.drawImage(cardCanvas, 0, 0);
+                inner.appendChild(clone);
+            } else {
+                inner.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--pe-text-muted);font-size:12px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Rendering preview...</div>';
+            }
+        }
+    }
 }
 
 function updateCompanionPanel() {
