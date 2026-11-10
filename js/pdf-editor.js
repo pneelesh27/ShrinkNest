@@ -338,7 +338,8 @@ async function handleFiles(files) {
                 continue;
             }
 
-            const pdfJsDoc = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+            const pdfJsBytes = new Uint8Array(arrayBuf.slice(0));
+            const pdfJsDoc = await pdfjsLib.getDocument({ data: pdfJsBytes }).promise;
             const pdfIdx = state.pdfDocs.length;
             state.pdfDocs.push(libDoc);
             state.pdfJsDocs.push(pdfJsDoc);
@@ -494,6 +495,10 @@ async function renderGrid() {
         thumbObserver.observe(card);
     }
 
+    if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons({ root: pagesGrid });
+    }
+
     // Initialize SortableJS
     initSortable();
 }
@@ -514,32 +519,29 @@ function createPageCard(idx) {
 
     card.innerHTML = `
         <div class="page-thumb-wrap page-thumb-loading" id="thumbWrap_${idx}">
-            <div class="spin"></div>
+            <div class="shimmer-wave"></div>
         </div>
         <div class="page-rotation-badge" id="rotBadge_${idx}"></div>
         ${annotCount > 0 ? `<div class="page-annot-badge">${annotCount} edit${annotCount > 1 ? 's' : ''}</div>` : ''}
 
         <!-- Checkbox Badge (Top Right) -->
-        <div class="page-check-badge" data-check="1" title="Select (Ctrl/Cmd+Click or Shift+Click)">
-            ${state.selected.has(idx) ? '<i class="fas fa-check" style="font-size:11px;"></i>' : ''}
+        <div class="page-check-badge" data-check="1" title="Select (Click to toggle)">
+            ${state.selected.has(idx) ? '<i data-lucide="check" class="check-icon"></i>' : ''}
         </div>
 
         <!-- Floating Quick-Action Pill on Hover -->
         <div class="page-hover-actions">
-            <button type="button" class="page-action-btn" data-action="rotL" title="Rotate Left">
-                <i class="fas fa-rotate-left"></i>
-            </button>
-            <button type="button" class="page-action-btn" data-action="rotR" title="Rotate Right">
-                <i class="fas fa-rotate-right"></i>
+            <button type="button" class="page-action-btn" data-action="rotR" title="Rotate 90°">
+                <i data-lucide="rotate-cw"></i>
             </button>
             <button type="button" class="page-action-btn" data-action="dup" title="Duplicate Page">
-                <i class="fas fa-copy"></i>
+                <i data-lucide="copy"></i>
             </button>
-            <button type="button" class="page-action-btn" data-action="edit" title="Open Page Editor">
-                <i class="fas fa-pen-to-square"></i>
+            <button type="button" class="page-action-btn" data-action="expand" title="Open Page Details / Editor">
+                <i data-lucide="maximize-2"></i>
             </button>
             <button type="button" class="page-action-btn danger" data-action="del" title="Remove Page">
-                <i class="fas fa-trash-can"></i>
+                <i data-lucide="trash-2"></i>
             </button>
         </div>
 
@@ -547,11 +549,8 @@ function createPageCard(idx) {
         <div class="page-footer">
             <span class="page-num">Page ${idx + 1}</span>
             <div class="page-footer-actions">
-                ${idx > 0 ? `<button type="button" class="page-move-btn" data-action="movePrev" title="Move page earlier" aria-label="Move page earlier"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>` : ''}
-                ${idx < state.pages.length - 1 ? `<button type="button" class="page-move-btn" data-action="moveNext" title="Move page later" aria-label="Move page later"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>` : ''}
-                <button type="button" class="page-card-edit-btn" data-action="edit" title="Edit this page" aria-label="Edit this page">
-                    <i class="fas fa-pen-to-square" aria-hidden="true"></i>
-                </button>
+                ${idx > 0 ? `<button type="button" class="page-move-btn" data-action="movePrev" title="Move page earlier" aria-label="Move page earlier"><i data-lucide="chevron-left"></i></button>` : ''}
+                ${idx < state.pages.length - 1 ? `<button type="button" class="page-move-btn" data-action="moveNext" title="Move page later" aria-label="Move page later"><i data-lucide="chevron-right"></i></button>` : ''}
             </div>
         </div>
     `;
@@ -591,14 +590,8 @@ function bindCardInteractions(card, idx) {
             return;
         }
 
-        // Ctrl / Cmd + Click for multi-select
-        if (e.ctrlKey || e.metaKey) {
-            toggleSelect(idx);
-            return;
-        }
-
-        // Default click: open page editor
-        openPageEditor(idx);
+        // Single click: toggle select & update inspector
+        toggleSelect(idx);
     });
 
     card.addEventListener('dblclick', e => {
@@ -644,13 +637,18 @@ function handleCardAction(action, idx) {
         case 'dup':
             duplicatePages([idx]);
             break;
+        case 'expand':
         case 'edit':
             openPageEditor(idx);
             break;
         case 'del':
-            showConfirm(`Remove Page ${idx + 1}?`, 'You can restore it anytime with Undo.', () => {
+            if (state.pages.length === 1) {
+                showConfirm(`Remove Page ${idx + 1}?`, 'This will remove the only remaining page in the document.', () => {
+                    removePages([idx]);
+                });
+            } else {
                 removePages([idx]);
-            });
+            }
             break;
     }
 }
@@ -685,7 +683,10 @@ function syncCardSelection(idx) {
     card.classList.toggle('selected', isSel);
     const chk = card.querySelector('[data-check]');
     if (chk) {
-        chk.innerHTML = isSel ? '<i class="fas fa-check" style="font-size:11px;"></i>' : '';
+        chk.innerHTML = isSel ? '<i data-lucide="check" class="check-icon"></i>' : '';
+        if (isSel && window.lucide && typeof lucide.createIcons === 'function') {
+            lucide.createIcons({ root: chk });
+        }
     }
 }
 
@@ -922,20 +923,24 @@ async function renderThumb(idx) {
             ctx.restore();
         }
 
+        pg._renderedCanvas = canvas;
         thumbCache.set(cacheKey, canvas);
         wrap.classList.remove('page-thumb-loading');
         wrap.innerHTML = '';
         wrap.appendChild(canvas);
 
         const curActiveIdx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
-        if (pageIdx === curActiveIdx) {
+        if (idx === curActiveIdx) {
             updateInspector();
         }
     } catch (e) {
-        console.warn('Render thumb error:', e);
+        console.error('[PDF.js Thumbnail Error on page ' + (idx + 1) + ']:', e);
         if (wrap) {
             wrap.classList.remove('page-thumb-loading');
-            wrap.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px;">Preview unavailable</div>';
+            wrap.innerHTML = '<div style="padding:20px;text-align:center;color:#DC2626;font-size:12px;font-weight:500;"><i data-lucide="alert-triangle" style="display:block;margin:0 auto 6px;width:20px;height:20px;"></i>Failed to render</div>';
+            if (window.lucide && typeof lucide.createIcons === 'function') {
+                lucide.createIcons({ root: wrap });
+            }
         }
     }
 }
@@ -1070,7 +1075,10 @@ function removePages(indices) {
     toRemove.forEach(i => state.pages.splice(i, 1));
     state.selected.clear();
     renderGrid();
-    showToast(`Removed ${toRemove.length} page(s). Use Undo to restore.`);
+    showToast(`Removed ${toRemove.length} page${toRemove.length > 1 ? 's' : ''}`, {
+        undoAction: () => undo(),
+        duration: 5000
+    });
 }
 
 /* ─────────────────────────────────────────
@@ -1190,7 +1198,27 @@ if (compDelete) compDelete.addEventListener('click', () => {
 });
 if (compAddBlank) compAddBlank.addEventListener('click', insertBlankPage);
 
-// Studio Dropdown Menu Wiring
+// Tabbed Toolbar Switching Logic
+document.querySelectorAll('.tb-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.tab;
+        document.querySelectorAll('.tb-tab-btn').forEach(b => {
+            const isActive = b === btn;
+            b.classList.toggle('active', isActive);
+            b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        document.querySelectorAll('.tb-tab-panel').forEach(p => {
+            const isMatch = p.id === `tabPanel${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`;
+            p.classList.toggle('active', isMatch);
+            p.style.display = isMatch ? 'flex' : 'none';
+        });
+        if (window.lucide && typeof lucide.createIcons === 'function') {
+            lucide.createIcons();
+        }
+    });
+});
+
+// Studio Dropdown Menu Wiring (legacy / fallback)
 const btnMoreTools = document.getElementById('btnMoreTools');
 const moreToolsMenu = document.getElementById('moreToolsMenu');
 if (btnMoreTools && moreToolsMenu) {
@@ -1247,9 +1275,13 @@ if (inspDuplicate) inspDuplicate.addEventListener('click', () => {
 if (inspDelete) inspDelete.addEventListener('click', () => {
     const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
     if (state.pages[idx]) {
-        showConfirm(`Remove Page ${idx + 1}?`, 'You can restore it anytime with Undo.', () => {
+        if (state.pages.length === 1) {
+            showConfirm(`Remove Page ${idx + 1}?`, 'This will remove the only remaining page in the document.', () => {
+                removePages([idx]);
+            });
+        } else {
             removePages([idx]);
-        });
+        }
     }
 });
 
@@ -1285,9 +1317,13 @@ btnRemove.addEventListener('click', () => {
         showToast('Select pages to remove.');
         return;
     }
-    showConfirm(`Remove ${state.selected.size} page(s)?`, 'This can be restored at any time with Undo.', () => {
+    if (state.selected.size === state.pages.length) {
+        showConfirm('Remove All Pages?', 'You are about to remove all pages from this document. You can undo if needed.', () => {
+            removePages(Array.from(state.selected));
+        });
+    } else {
         removePages(Array.from(state.selected));
-    });
+    }
 });
 
 btnExtract.addEventListener('click', async () => {
@@ -3149,18 +3185,16 @@ function updateInspector() {
     if (editsEl) editsEl.textContent = `${annCount} edit${annCount !== 1 ? 's' : ''}`;
 
     if (inner) {
-        const cacheKey = `${pg.pdfIndex}_${pg.pageIndex}_${pg.rotation}`;
-        const cached = thumbCache.get(cacheKey);
-        if (cached && cached.width > 0) {
+        if (pg._renderedCanvas && pg._renderedCanvas.width > 0) {
             inner.innerHTML = '';
             const clone = document.createElement('canvas');
-            clone.width = cached.width;
-            clone.height = cached.height;
+            clone.width = pg._renderedCanvas.width;
+            clone.height = pg._renderedCanvas.height;
             const ctx = clone.getContext('2d');
-            ctx.drawImage(cached, 0, 0);
+            ctx.drawImage(pg._renderedCanvas, 0, 0);
             inner.appendChild(clone);
         } else {
-            const cardCanvas = document.querySelector(`.page-card[data-index="${targetIdx}"] canvas`);
+            const cardCanvas = document.querySelector(`.page-card[data-idx="${targetIdx}"] canvas`);
             if (cardCanvas && cardCanvas.width > 0) {
                 inner.innerHTML = '';
                 const clone = document.createElement('canvas');
@@ -3170,7 +3204,7 @@ function updateInspector() {
                 ctx.drawImage(cardCanvas, 0, 0);
                 inner.appendChild(clone);
             } else {
-                inner.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--pe-text-muted);font-size:12px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Rendering preview...</div>';
+                inner.innerHTML = '<div class="inspector-shimmer-box"><div class="shimmer-wave"></div></div>';
             }
         }
     }
@@ -3226,12 +3260,41 @@ function clearError() {
 }
 
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, options = {}) {
     if (!peToast) return;
-    peToast.innerHTML = `<i class="fas fa-circle-check" style="color:var(--pe-purple);"></i> <span>${msg}</span>`;
+    const duration = options.duration || (options.undoAction ? 5000 : 2800);
+    peToast.innerHTML = '';
+
+    const iconWrap = document.createElement('span');
+    iconWrap.className = 'toast-icon-wrap';
+    iconWrap.innerHTML = `<i data-lucide="${options.isError ? 'alert-circle' : 'check-circle-2'}"></i>`;
+    peToast.appendChild(iconWrap);
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'toast-text';
+    textSpan.textContent = msg;
+    peToast.appendChild(textSpan);
+
+    if (options.undoAction) {
+        const undoBtn = document.createElement('button');
+        undoBtn.type = 'button';
+        undoBtn.className = 'toast-undo-btn';
+        undoBtn.textContent = 'Undo';
+        undoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            peToast.classList.remove('show');
+            options.undoAction();
+        });
+        peToast.appendChild(undoBtn);
+    }
+
+    if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons({ root: peToast });
+    }
+
     peToast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => peToast.classList.remove('show'), 2600);
+    toastTimer = setTimeout(() => peToast.classList.remove('show'), duration);
 }
 
 function showConfirm(title, body, onConfirm) {
@@ -4210,3 +4273,17 @@ setInterval(() => { if (state.pages.length > 0) autosaveSession(); }, 30000);
     });
     observer.observe(resultActions, { childList: true });
 })();
+
+// Initialize Lucide icons
+if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide && typeof lucide.createIcons === 'function') {
+            lucide.createIcons();
+        }
+    });
+    setTimeout(() => {
+        if (window.lucide && typeof lucide.createIcons === 'function') {
+            lucide.createIcons();
+        }
+    }, 150);
+}
