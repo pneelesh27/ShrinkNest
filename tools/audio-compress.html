@@ -563,7 +563,8 @@ canvas.wave { width:100%; height:72px; display:block; border-radius:6px; }
 <!-- ═══════════════════════════════
      JAVASCRIPT
 ═══════════════════════════════ -->
-<script>
+<script type="module">
+import { saveCompressionHistory } from "../js/history.js";
 /* ───────────────────────────────────────────
    STATE
 ─────────────────────────────────────────── */
@@ -904,6 +905,22 @@ async function showResult(blob, targetSR, targetCH) {
         tmpCtx.close();
         drawWave(tmpBuf, 'wave2', '#FFD200', '#F7971E');
     } catch(_) { /* waveform is optional — skip silently */ }
+
+    // Save to history if logged in
+    try {
+        saveCompressionHistory({
+            filename: srcFile.name,
+            originalSize: fmtBytes(origSz),
+            compressedSize: fmtBytes(newSz),
+            originalSizeBytes: origSz,
+            compressedSizeBytes: newSz,
+            saved: Math.max(0, pct),
+            type: "audio",
+            compressedFile: blob
+        });
+    } catch (hErr) {
+        console.warn("Audio history save error:", hErr);
+    }
 
     $('resultWrap').style.display = 'block';
     $('resultWrap').scrollIntoView({behavior:'smooth',block:'nearest'});

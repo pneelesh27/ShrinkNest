@@ -756,7 +756,8 @@
 <!-- ═══════════════════════════════
      JAVASCRIPT
 ═══════════════════════════════ -->
-<script>
+<script type="module">
+import { saveCompressionHistory } from "../js/history.js";
 /* ─── State ─── */
 let files = [];           // { file: File, id: number }
 let nextId = 0;
@@ -888,6 +889,7 @@ function removeFile(id) {
     files = files.filter(e => e.id !== id);
     renderList();
 }
+window.removeFile = removeFile;
 
 /* ─── Clear all ─── */
 clearAllBtn.addEventListener('click', () => {
@@ -990,6 +992,22 @@ archiveBtn.addEventListener('click', async () => {
         resOriginal.textContent = formatSize(totalOriginal);
         resZip.textContent      = formatSize(zipBlob.size);
         resSaved.textContent    = savedPct + '%';
+
+        // Save history if logged in
+        try {
+            saveCompressionHistory({
+                filename: zipName,
+                originalSize: formatSize(totalOriginal),
+                compressedSize: formatSize(zipBlob.size),
+                originalSizeBytes: totalOriginal,
+                compressedSizeBytes: zipBlob.size,
+                saved: savedPct,
+                type: "archive",
+                compressedFile: zipBlob
+            });
+        } catch (hErr) {
+            console.warn("Archive history save error:", hErr);
+        }
 
         successCard.style.display = 'block';
         successCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
