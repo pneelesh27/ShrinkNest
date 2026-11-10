@@ -65,32 +65,32 @@
         <div class="container">
 
             <!-- Title & Privacy Badge -->
-            <div class="tool-title" style="text-align:center;margin-bottom:28px;">
-                <h1 style="font-size:36px;font-weight:700;background:linear-gradient(135deg, #6C63FF, #00D4FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;display:inline-flex;align-items:center;justify-content:center;gap:12px;">
-                    <span style="-webkit-text-fill-color:initial;display:inline-flex;"><i class="fas fa-file-pdf" style="color:#FF5A5F;"></i></span><span>PDF Editor</span>
+            <section class="tool-header" aria-labelledby="pageTitle">
+                <h1 id="pageTitle" class="tool-main-heading">
+                    <span class="tool-icon-wrap" aria-hidden="true"><i class="fas fa-file-pdf"></i></span>
+                    <span>PDF Editor</span>
                 </h1>
-                <p style="color:var(--pe-text-secondary);font-size:15px;margin-bottom:8px;">
-                    Merge · Split · Rotate · Reorder · Remove · Duplicate · Edit Pages — all client-side.
+                <p class="tool-subheading">
+                    Merge, split, rotate, reorder, duplicate, watermark, crop, annotate, and secure PDF documents — 100% private in your browser.
                 </p>
-                <div class="pe-privacy-badge">
-                    <i class="fa-solid fa-shield-halved"></i> 100% Client-Side — Files never leave your device
+                <div class="pe-privacy-badge" role="status">
+                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> 100% Client-Side — Files never leave your device
                 </div>
-            </div>
+            </section>
 
             <!-- Error Banner -->
-            <div class="pe-error-banner" id="errorBanner">
-                <i class="fas fa-circle-exclamation"></i>
+            <div class="pe-error-banner" id="errorBanner" role="alert">
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
                 <span id="errorMsg"></span>
             </div>
 
             <!-- Initial Upload Zone -->
-            <label class="upload-zone" id="uploadZone" for="fileInput">
-                <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+            <label class="upload-zone" id="uploadZone" for="fileInput" tabindex="0" role="button" aria-label="Upload PDF files">
+                <div class="upload-icon" aria-hidden="true"><i class="fas fa-file-pdf"></i></div>
                 <h2>Drag &amp; Drop your PDFs here</h2>
                 <p>or click to browse — multiple PDF files supported</p>
-                <span class="btn-choose"><i class="fas fa-arrow-up-from-bracket"></i> Choose PDF Files</span>
-                <p class="upload-hint"><i class="fa-solid fa-lock"></i> Client-side processing. Your documents remain
-                    completely private.</p>
+                <span class="btn-choose"><i class="fas fa-arrow-up-from-bracket" aria-hidden="true"></i> Choose PDF Files</span>
+                <p class="upload-hint"><i class="fa-solid fa-lock" aria-hidden="true"></i> Client-side processing. Your documents remain completely private.</p>
                 <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple>
             </label>
 
@@ -98,22 +98,24 @@
             <div class="editor-workspace" id="editorWorkspace">
 
                 <!-- File Bar (Multi-file Glass Card) -->
-                <div class="file-bar" id="fileBar">
+                <div class="file-bar" id="fileBar" role="region" aria-label="Loaded Document Info">
                     <div class="file-bar-main">
                         <div class="file-bar-left">
-                            <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
-                            <div>
-                                <h3 id="fileLabel">document.pdf</h3>
+                            <div class="file-icon" aria-hidden="true"><i class="fas fa-file-pdf"></i></div>
+                            <div class="file-text-wrap">
+                                <h3 id="fileLabel" class="file-title-truncate" title="document.pdf">document.pdf</h3>
                                 <p id="fileMeta">0 pages</p>
                             </div>
                         </div>
                         <div class="file-bar-actions">
-                            <button type="button" class="btn-toggle-files" id="btnToggleFiles" style="display:none;">
-                                <i class="fas fa-layer-group"></i> <span id="filesCountText">Files (1)</span> <i
-                                    class="fas fa-chevron-down" id="filesChevron"></i>
+                            <button type="button" class="btn-remove-current-file" id="btnRemoveCurrentFile" title="Remove loaded document" aria-label="Remove document">
+                                <i class="fas fa-trash-can" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="btn-toggle-files" id="btnToggleFiles" style="display:none;" aria-expanded="false">
+                                <i class="fas fa-layer-group" aria-hidden="true"></i> <span id="filesCountText">Files (1)</span> <i class="fas fa-chevron-down" id="filesChevron" aria-hidden="true"></i>
                             </button>
                             <label class="btn-add-pdf" title="Add more PDFs to this session">
-                                <i class="fas fa-plus"></i> Add More PDFs
+                                <i class="fas fa-plus" aria-hidden="true"></i> <span>Add More PDFs</span>
                                 <input type="file" id="addMoreInput" accept=".pdf,application/pdf" multiple>
                             </label>
                         </div>
@@ -122,154 +124,232 @@
                     <div class="files-list-container" id="filesListContainer"></div>
                 </div>
 
-                <!-- Sticky Top Toolbar -->
-                <div class="sticky-toolbar" id="editorToolbar">
+                <!-- Sticky Top Toolbar (Organized into Labeled Semantic Groups) -->
+                <div class="sticky-toolbar" id="editorToolbar" role="toolbar" aria-label="PDF Editor Toolbar">
+
                     <!-- Group 1: Selection -->
-                    <div class="toolbar-group">
-                        <button class="tb-btn" id="btnSelectAll" title="Select All Pages (Ctrl+A)">
-                            <i class="fas fa-check-double"></i> <span>All</span>
-                        </button>
-                        <button class="tb-btn" id="btnDeselectAll" title="Deselect All (Esc)">
-                            <i class="fas fa-xmark"></i> <span>None</span>
-                        </button>
-                        <div class="tb-range-group" title="Select pages by range e.g. 1-3, 5, 8-10" style="position:relative;">
-                            <input type="text" id="tbRangeInput" placeholder="1-3, 5" class="tb-range-input">
-                            <button type="button" class="tb-range-btn" id="btnRangeSelect">Select</button>
-                            <button type="button" class="tb-range-btn" id="btnRangePresets" title="Presets (Even, Odd, Invert)"><i class="fas fa-ellipsis-vertical"></i></button>
-                            <div class="range-presets-menu" id="rangePresetsMenu" style="display:none;">
-                                <button type="button" class="range-preset-item" id="presetEven"><i class="fas fa-list-ol"></i> Even Pages (2, 4, 6…)</button>
-                                <button type="button" class="range-preset-item" id="presetOdd"><i class="fas fa-list-ol"></i> Odd Pages (1, 3, 5…)</button>
-                                <button type="button" class="range-preset-item" id="presetInvert"><i class="fas fa-shuffle"></i> Invert Selection</button>
+                    <div class="toolbar-section" data-group="selection">
+                        <span class="toolbar-section-label">Selection</span>
+                        <div class="toolbar-group">
+                            <button class="tb-btn" id="btnSelectAll" title="Select All Pages (Ctrl+A)" aria-label="Select All Pages">
+                                <i class="fas fa-check-double" aria-hidden="true"></i> <span>All</span>
+                            </button>
+                            <button class="tb-btn" id="btnDeselectAll" title="Deselect All (Esc)" aria-label="Deselect All Pages">
+                                <i class="fas fa-xmark" aria-hidden="true"></i> <span>None</span>
+                            </button>
+                            <div class="tb-range-group" title="Select pages by range e.g. 1-3, 5, 8-10" style="position:relative;">
+                                <input type="text" id="tbRangeInput" placeholder="1-3, 5" class="tb-range-input" aria-label="Page range to select">
+                                <button type="button" class="tb-range-btn" id="btnRangeSelect" title="Select page range">Select</button>
+                                <button type="button" class="tb-range-btn" id="btnRangePresets" title="Selection Presets (Even, Odd, Invert)" aria-label="Selection Presets"><i class="fas fa-ellipsis-vertical" aria-hidden="true"></i></button>
+                                <div class="range-presets-menu" id="rangePresetsMenu" style="display:none;" role="menu">
+                                    <button type="button" class="range-preset-item" id="presetEven" role="menuitem"><i class="fas fa-list-ol" aria-hidden="true"></i> Even Pages (2, 4, 6…)</button>
+                                    <button type="button" class="range-preset-item" id="presetOdd" role="menuitem"><i class="fas fa-list-ol" aria-hidden="true"></i> Odd Pages (1, 3, 5…)</button>
+                                    <button type="button" class="range-preset-item" id="presetInvert" role="menuitem"><i class="fas fa-shuffle" aria-hidden="true"></i> Invert Selection</button>
+                                </div>
                             </div>
+                            <span class="tb-selection-pill" id="tbSelectionPill" aria-live="polite">0 selected</span>
                         </div>
-                        <span class="tb-selection-pill" id="tbSelectionPill">0 selected</span>
                     </div>
 
-                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-divider" aria-hidden="true"></div>
 
-                    <!-- Group 2: Page Actions -->
-                    <div class="toolbar-group">
-                        <button class="tb-btn" id="btnRotL" title="Rotate selected left (Shift+R)" disabled>
-                            <i class="fas fa-rotate-left"></i> <span>Left</span>
-                        </button>
-                        <button class="tb-btn" id="btnRotR" title="Rotate selected right (R)" disabled>
-                            <i class="fas fa-rotate-right"></i> <span>Right</span>
-                        </button>
-                        <button class="tb-btn" id="btnDuplicate" title="Duplicate selected page(s)" disabled>
-                            <i class="fas fa-copy"></i> <span>Duplicate</span>
-                        </button>
-                        <button class="tb-btn" id="btnInsertBlank" title="Insert blank page">
-                            <i class="fas fa-file-circle-plus"></i> <span>+ Blank</span>
-                        </button>
-                        <button class="tb-btn" id="btnExtract" title="Extract selected pages into new PDF" disabled>
-                            <i class="fas fa-file-export"></i> <span>Extract</span>
-                        </button>
-                        <button class="tb-btn danger" id="btnRemove" title="Remove selected pages (Delete)" disabled>
-                            <i class="fas fa-trash-can"></i> <span>Remove</span>
-                        </button>
-                    </div>
-
-                    <div class="toolbar-divider"></div>
-
-                    <!-- Group 3: History & Tools -->
-                    <div class="toolbar-group">
-                        <button class="tb-btn" id="btnMerge" title="Merge all pages into one PDF">
-                            <i class="fas fa-layer-group"></i> <span>Merge</span>
-                        </button>
-                        <button class="tb-btn" id="btnSplit" title="Split PDF by page ranges">
-                            <i class="fas fa-scissors"></i> <span>Split</span>
-                        </button>
-                        <button class="tb-btn" id="btnPageNumbers" title="Add Page Numbers">
-                            <i class="fas fa-arrow-down-1-9"></i> <span>Page #</span>
-                        </button>
-                        <button class="tb-btn" id="btnWatermark" title="Add Text or Image Watermark">
-                            <i class="fas fa-stamp"></i> <span>Watermark</span>
-                        </button>
-                        <button class="tb-btn" id="btnCropModal" title="Crop Pages">
-                            <i class="fas fa-crop-simple"></i> <span>Crop</span>
-                        </button>
-                        <button class="tb-btn" id="btnResizeModal" title="Resize Pages & Margins">
-                            <i class="fas fa-up-right-and-down-left-from-center"></i> <span>Resize</span>
-                        </button>
-                        <button class="tb-btn" id="btnConvertModal" title="Convert PDF to Images">
-                            <i class="fas fa-images"></i> <span>Convert</span>
-                        </button>
-                        <button class="tb-btn" id="btnAdvSplitModal" title="Advanced Split Options">
-                            <i class="fas fa-scissors"></i> <span>Split+</span>
-                        </button>
-                        <button class="tb-btn" id="btnPasswordModal" title="Password Protect PDF">
-                            <i class="fas fa-lock"></i> <span>Password</span>
-                        </button>
-                        <button class="tb-btn" id="btnExtractTextModal" title="Extract Text from PDF">
-                            <i class="fas fa-file-lines"></i> <span>Text</span>
-                        </button>
-                        <button class="tb-btn" id="btnUndo" title="Undo (Ctrl+Z)" disabled>
-                            <i class="fas fa-rotate-left"></i>
-                        </button>
-                        <button class="tb-btn" id="btnRedo" title="Redo (Ctrl+Y or Ctrl+Shift+Z)" disabled>
-                            <i class="fas fa-rotate-right"></i>
-                        </button>
-                    </div>
-
-                    <div class="toolbar-divider"></div>
-
-                    <!-- Group 4: View Controls & Shortcuts -->
-                    <div class="toolbar-group">
-                        <div class="tb-zoom-group">
-                            <button class="tb-btn-icon" data-zoom="sm" id="btnZoomSm" title="Small thumbnails">
-                                <i class="fas fa-border-all" style="font-size:11px;"></i>
+                    <!-- Group 2: Page Actions (Context-sensitive on selection) -->
+                    <div class="toolbar-section" data-group="page-actions">
+                        <span class="toolbar-section-label">Page Actions</span>
+                        <div class="toolbar-group">
+                            <button class="tb-btn" id="btnRotL" title="Rotate selected left (Shift+R)" aria-label="Rotate Left" disabled>
+                                <i class="fas fa-rotate-left" aria-hidden="true"></i> <span>Rotate Left</span>
                             </button>
-                            <button class="tb-btn-icon active" data-zoom="md" id="btnZoomMd" title="Medium thumbnails">
-                                <i class="fas fa-table-cells-large"></i>
+                            <button class="tb-btn" id="btnRotR" title="Rotate selected right (R)" aria-label="Rotate Right" disabled>
+                                <i class="fas fa-rotate-right" aria-hidden="true"></i> <span>Rotate Right</span>
                             </button>
-                            <button class="tb-btn-icon" data-zoom="lg" id="btnZoomLg" title="Large thumbnails">
-                                <i class="fas fa-square"></i>
+                            <button class="tb-btn" id="btnDuplicate" title="Duplicate selected page(s)" aria-label="Duplicate Selected Pages" disabled>
+                                <i class="fas fa-copy" aria-hidden="true"></i> <span>Duplicate</span>
+                            </button>
+                            <button class="tb-btn" id="btnInsertBlank" title="Insert blank page" aria-label="Insert Blank Page">
+                                <i class="fas fa-file-circle-plus" aria-hidden="true"></i> <span>+ Blank</span>
+                            </button>
+                            <button class="tb-btn" id="btnExtract" title="Extract selected pages into new PDF" aria-label="Extract Pages" disabled>
+                                <i class="fas fa-file-export" aria-hidden="true"></i> <span>Extract</span>
+                            </button>
+                            <button class="tb-btn danger" id="btnRemove" title="Remove selected pages (Delete)" aria-label="Remove Selected Pages" disabled>
+                                <i class="fas fa-trash-can" aria-hidden="true"></i> <span>Remove</span>
                             </button>
                         </div>
-                        <button class="tb-btn-icon" id="btnViewToggle" title="Toggle Grid / List View">
-                            <i class="fas fa-list-ul"></i>
-                        </button>
-                        <button class="tb-btn-icon" id="btnShortcutsHelp" title="Keyboard Shortcuts (?)">
-                            <i class="fas fa-circle-question"></i>
-                        </button>
+                    </div>
+
+                    <div class="toolbar-divider" aria-hidden="true"></div>
+
+                    <!-- Group 3: Document Tools -->
+                    <div class="toolbar-section" data-group="doc-tools">
+                        <span class="toolbar-section-label">Document Tools</span>
+                        <div class="toolbar-group">
+                            <button class="tb-btn" id="btnMerge" title="Merge all pages into one PDF" aria-label="Merge PDF">
+                                <i class="fas fa-layer-group" aria-hidden="true"></i> <span>Merge</span>
+                            </button>
+                            <button class="tb-btn" id="btnSplit" title="Split PDF by page ranges" aria-label="Split PDF">
+                                <i class="fas fa-scissors" aria-hidden="true"></i> <span>Split</span>
+                            </button>
+                            <button class="tb-btn" id="btnAdvSplitModal" title="Advanced Split Options (Burst, Fixed Chunks)" aria-label="Advanced Split">
+                                <i class="fas fa-diagram-project" aria-hidden="true"></i> <span>Split+</span>
+                            </button>
+                            <button class="tb-btn" id="btnPageNumbers" title="Add Page Numbers" aria-label="Add Page Numbers">
+                                <i class="fas fa-arrow-down-1-9" aria-hidden="true"></i> <span>Page #</span>
+                            </button>
+                            <button class="tb-btn" id="btnWatermark" title="Add Text or Image Watermark" aria-label="Add Watermark">
+                                <i class="fas fa-stamp" aria-hidden="true"></i> <span>Watermark</span>
+                            </button>
+                            <button class="tb-btn" id="btnCropModal" title="Crop Pages" aria-label="Crop Pages">
+                                <i class="fas fa-crop-simple" aria-hidden="true"></i> <span>Crop</span>
+                            </button>
+                            <button class="tb-btn" id="btnResizeModal" title="Resize Pages &amp; Margins" aria-label="Resize Pages">
+                                <i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i> <span>Resize</span>
+                            </button>
+                            <button class="tb-btn" id="btnConvertModal" title="Convert PDF to Images (ZIP)" aria-label="Convert PDF to Images">
+                                <i class="fas fa-images" aria-hidden="true"></i> <span>Convert</span>
+                            </button>
+                            <button class="tb-btn" id="btnExtractTextModal" title="Extract Text from PDF" aria-label="Extract Text">
+                                <i class="fas fa-file-lines" aria-hidden="true"></i> <span>Text</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-divider" aria-hidden="true"></div>
+
+                    <!-- Group 4: Security -->
+                    <div class="toolbar-section" data-group="security">
+                        <span class="toolbar-section-label">Security</span>
+                        <div class="toolbar-group">
+                            <button class="tb-btn" id="btnPasswordModal" title="Password Protect PDF" aria-label="Password Protect PDF">
+                                <i class="fas fa-lock" aria-hidden="true"></i> <span>Password</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-divider" aria-hidden="true"></div>
+
+                    <!-- Group 5: History & View -->
+                    <div class="toolbar-section" data-group="history-view">
+                        <span class="toolbar-section-label">History &amp; View</span>
+                        <div class="toolbar-group">
+                            <button class="tb-btn-icon" id="btnUndo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>
+                                <i class="fas fa-rotate-left" aria-hidden="true"></i>
+                            </button>
+                            <button class="tb-btn-icon" id="btnRedo" title="Redo (Ctrl+Y or Ctrl+Shift+Z)" aria-label="Redo" disabled>
+                                <i class="fas fa-rotate-right" aria-hidden="true"></i>
+                            </button>
+                            <div class="tb-zoom-group" role="group" aria-label="Thumbnail size controls">
+                                <button class="tb-btn-icon" data-zoom="sm" id="btnZoomSm" title="Small thumbnails" aria-label="Small thumbnails">
+                                    <i class="fas fa-border-all" style="font-size:11px;" aria-hidden="true"></i>
+                                </button>
+                                <button class="tb-btn-icon active" data-zoom="md" id="btnZoomMd" title="Medium thumbnails" aria-label="Medium thumbnails">
+                                    <i class="fas fa-table-cells-large" aria-hidden="true"></i>
+                                </button>
+                                <button class="tb-btn-icon" data-zoom="lg" id="btnZoomLg" title="Large thumbnails" aria-label="Large thumbnails">
+                                    <i class="fas fa-square" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <button class="tb-btn-icon" id="btnViewToggle" title="Toggle Grid / List View" aria-label="Toggle Grid or List View">
+                                <i class="fas fa-list-ul" aria-hidden="true"></i>
+                            </button>
+                            <button class="tb-btn-icon" id="btnShortcutsHelp" title="Keyboard Shortcuts (?)" aria-label="Keyboard Shortcuts">
+                                <i class="fas fa-circle-question" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Contextual Action Bar (Smoothly appears when 1+ pages are selected) -->
+                <div class="contextual-action-bar" id="contextualActionBar" style="display:none;" role="region" aria-label="Selection Actions">
+                    <div class="cab-left">
+                        <span class="cab-count" id="cabCount">0 selected</span>
+                        <button type="button" class="cab-clear-btn" id="cabClearBtn" title="Clear selection (Esc)">Deselect</button>
+                    </div>
+                    <div class="cab-actions">
+                        <button type="button" class="cab-btn" id="cabRotL" title="Rotate Left (Shift+R)"><i class="fas fa-rotate-left" aria-hidden="true"></i> <span>Rotate Left</span></button>
+                        <button type="button" class="cab-btn" id="cabRotR" title="Rotate Right (R)"><i class="fas fa-rotate-right" aria-hidden="true"></i> <span>Rotate Right</span></button>
+                        <button type="button" class="cab-btn" id="cabDup" title="Duplicate selected page(s)"><i class="fas fa-copy" aria-hidden="true"></i> <span>Duplicate</span></button>
+                        <button type="button" class="cab-btn" id="cabExtract" title="Extract selected pages"><i class="fas fa-file-export" aria-hidden="true"></i> <span>Extract</span></button>
+                        <button type="button" class="cab-btn danger" id="cabRemove" title="Remove selected pages (Delete)"><i class="fas fa-trash-can" aria-hidden="true"></i> <span>Remove</span></button>
                     </div>
                 </div>
 
                 <!-- Split Range Panel -->
                 <div class="split-panel" id="splitPanel">
-                    <label><i class="fas fa-scissors"></i> Page ranges for split:</label>
-                    <input type="text" id="splitInput" placeholder="e.g. 1-3, 4-6, 7-10">
-                    <button class="tb-btn success" id="btnSplitGo"><i class="fas fa-play"></i> Split Now</button>
+                    <label for="splitInput"><i class="fas fa-scissors" aria-hidden="true"></i> Page ranges for split:</label>
+                    <input type="text" id="splitInput" placeholder="e.g. 1-3, 4-6, 7-10" aria-label="Page ranges for split">
+                    <button class="tb-btn success" id="btnSplitGo"><i class="fas fa-play" aria-hidden="true"></i> Split Now</button>
                 </div>
 
                 <!-- Progress Panel -->
-                <div class="progress-panel" id="progressPanel">
-                    <div class="progress-ring"></div>
+                <div class="progress-panel" id="progressPanel" role="status" aria-live="assertive">
+                    <div class="progress-ring" aria-hidden="true"></div>
                     <p id="progressMsg">Processing…</p>
                     <small>Please wait, working entirely in your browser.</small>
                 </div>
 
                 <!-- Pages Grid Section -->
-                <div id="pagesSection">
+                <section id="pagesSection" aria-label="Document Pages">
                     <div class="pages-header">
                         <h4>
-                            <i class="fas fa-grip"></i> Pages
+                            <i class="fas fa-grip" aria-hidden="true"></i> <span>Pages</span>
                             <span class="pages-subhint">— click page to edit, drag to reorder, check to select</span>
                         </h4>
-                        <span class="pages-counter glass-pill" id="pageCount">0 pages</span>
+                        <span class="pages-counter glass-pill" id="pageCount" aria-live="polite">0 pages</span>
                     </div>
-                    <div class="pages-grid" id="pagesGrid" data-zoom="md" data-view="grid"></div>
+
+                    <!-- Companion Details Panel (Shown when 1-2 pages loaded to gracefully balance space) -->
+                    <div class="page-companion-panel" id="pageCompanionPanel" style="display:none;">
+                        <div class="companion-card companion-details">
+                            <div class="companion-header">
+                                <h5><i class="fas fa-circle-info" aria-hidden="true"></i> Page Details</h5>
+                                <span class="companion-tag" id="compPageTag">Page 1</span>
+                            </div>
+                            <div class="companion-meta" id="compMeta">
+                                <div class="meta-item"><span>Dimensions</span> <strong id="compDimensions">A4 (Standard)</strong></div>
+                                <div class="meta-item"><span>Rotation</span> <strong id="compRotation">0°</strong></div>
+                                <div class="meta-item"><span>Annotations</span> <strong id="compAnnots">0 edits</strong></div>
+                            </div>
+                            <div class="companion-actions">
+                                <button type="button" class="tb-btn" id="compRotL"><i class="fas fa-rotate-left" aria-hidden="true"></i> Left</button>
+                                <button type="button" class="tb-btn" id="compRotR"><i class="fas fa-rotate-right" aria-hidden="true"></i> Right</button>
+                                <button type="button" class="tb-btn" id="compEdit"><i class="fas fa-pen-to-square" aria-hidden="true"></i> Open Editor</button>
+                                <button type="button" class="tb-btn danger" id="compDelete"><i class="fas fa-trash-can" aria-hidden="true"></i> Remove</button>
+                            </div>
+                        </div>
+
+                        <div class="companion-card companion-dropzone" id="companionDropzone">
+                            <i class="fas fa-file-circle-plus" aria-hidden="true"></i>
+                            <h5>Add More Pages or PDFs</h5>
+                            <p>Drag files here or append a clean blank page</p>
+                            <div class="companion-drop-btns">
+                                <label class="btn-choose btn-sm" for="addMoreInput"><i class="fas fa-plus" aria-hidden="true"></i> Add PDF</label>
+                                <button type="button" class="tb-btn" id="compAddBlank"><i class="fas fa-file-circle-plus" aria-hidden="true"></i> Blank Page</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pages-grid" id="pagesGrid" data-zoom="md" data-view="grid" role="list"></div>
+
+                    <!-- Drop More PDFs Zone at bottom of grid -->
+                    <label class="drop-more-zone" id="dropMoreZone" for="addMoreInput" title="Drop more PDFs or click to add">
+                        <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
+                        <span>Drop more PDFs here to merge or append</span>
+                    </label>
+
                     <div class="pages-empty-state" id="pagesEmptyState" style="display:none;">
-                        <div class="empty-icon"><i class="fas fa-file-circle-xmark"></i></div>
+                        <div class="empty-icon" aria-hidden="true"><i class="fas fa-file-circle-xmark"></i></div>
                         <h3>No pages in this document</h3>
                         <p>All pages were removed or no document is loaded.</p>
-                        <label class="btn-choose" for="addMoreInput"><i class="fas fa-plus"></i> Add Pages</label>
+                        <label class="btn-choose" for="addMoreInput"><i class="fas fa-plus" aria-hidden="true"></i> Add Pages</label>
                     </div>
-                </div>
+                </section>
 
-                <!-- Result Panel -->
-                <div class="result-panel" id="resultPanel">
-                    <div class="result-icon"><i class="fas fa-check"></i></div>
+                <!-- Result Panel (Clean status card with close button) -->
+                <div class="result-panel" id="resultPanel" role="status" aria-live="polite">
+                    <button type="button" class="result-close-btn" id="btnCloseResult" title="Dismiss" aria-label="Dismiss result"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+                    <div class="result-icon" aria-hidden="true"><i class="fas fa-check"></i></div>
                     <h3>PDF Ready!</h3>
                     <p id="resultInfo">Your PDF has been processed.</p>
                     <div class="result-actions" id="resultActions"></div>
@@ -279,11 +359,11 @@
         </div><!-- /container -->
     </main>
 
-    <!-- ══ Sticky Save Bar ══ -->
-    <div class="sticky-bottom-bar" id="saveBar">
-        <div class="save-bar-left" id="saveBarInfo">0 pages • Click a page to edit it</div>
-        <button class="btn-save-download" id="btnSave" disabled>
-            <i class="fas fa-floppy-disk"></i> Save &amp; Download PDF
+    <!-- ══ Sticky Save Bar (Sticky, Blurred, Accessible, Safe-Area Compliant) ══ -->
+    <div class="sticky-bottom-bar" id="saveBar" role="region" aria-label="Document Save Bar">
+        <div class="save-bar-left" id="saveBarInfo" aria-live="polite">0 pages • Click a page to edit it</div>
+        <button class="btn-save-download" id="btnSave" disabled aria-label="Save and Download PDF">
+            <i class="fas fa-floppy-disk" aria-hidden="true"></i> <span>Save &amp; Download PDF</span>
         </button>
     </div>
 

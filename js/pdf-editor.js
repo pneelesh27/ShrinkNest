@@ -546,9 +546,13 @@ function createPageCard(idx) {
         <!-- Card Footer -->
         <div class="page-footer">
             <span class="page-num">Page ${idx + 1}</span>
-            <button type="button" class="page-card-edit-btn" data-action="edit" title="Edit this page">
-                <i class="fas fa-pen-to-square"></i>
-            </button>
+            <div class="page-footer-actions">
+                ${idx > 0 ? `<button type="button" class="page-move-btn" data-action="movePrev" title="Move page earlier" aria-label="Move page earlier"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>` : ''}
+                ${idx < state.pages.length - 1 ? `<button type="button" class="page-move-btn" data-action="moveNext" title="Move page later" aria-label="Move page later"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>` : ''}
+                <button type="button" class="page-card-edit-btn" data-action="edit" title="Edit this page" aria-label="Edit this page">
+                    <i class="fas fa-pen-to-square" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
     `;
 
@@ -604,8 +608,33 @@ function bindCardInteractions(card, idx) {
     });
 }
 
+function movePage(from, to) {
+    if (from === to || from < 0 || to < 0 || from >= state.pages.length || to >= state.pages.length) return;
+    pushUndo('Move Page');
+    const moved = state.pages.splice(from, 1)[0];
+    state.pages.splice(to, 0, moved);
+
+    // Update selected indices
+    const newSel = new Set();
+    state.selected.forEach(s => {
+        if (s === from) newSel.add(to);
+        else if (from < to && s > from && s <= to) newSel.add(s - 1);
+        else if (from > to && s >= to && s < from) newSel.add(s + 1);
+        else newSel.add(s);
+    });
+    state.selected = newSel;
+    renderGrid();
+    showToast(`Page moved to position ${to + 1}`);
+}
+
 function handleCardAction(action, idx) {
     switch (action) {
+        case 'movePrev':
+            if (idx > 0) movePage(idx, idx - 1);
+            break;
+        case 'moveNext':
+            if (idx < state.pages.length - 1) movePage(idx, idx + 1);
+            break;
         case 'rotL':
             rotateSinglePage(idx, -90);
             break;
@@ -1112,6 +1141,77 @@ btnRotR.addEventListener('click', () => rotateSelected(90));
 btnDuplicate.addEventListener('click', () => duplicatePages(Array.from(state.selected)));
 btnInsertBlank.addEventListener('click', insertBlankPage);
 
+// Contextual Action Bar Wiring
+const cabClearBtn = document.getElementById('cabClearBtn');
+const cabRotL = document.getElementById('cabRotL');
+const cabRotR = document.getElementById('cabRotR');
+const cabDup = document.getElementById('cabDup');
+const cabExtract = document.getElementById('cabExtract');
+const cabRemove = document.getElementById('cabRemove');
+
+if (cabClearBtn) cabClearBtn.addEventListener('click', () => btnDeselectAll.click());
+if (cabRotL) cabRotL.addEventListener('click', () => btnRotL.click());
+if (cabRotR) cabRotR.addEventListener('click', () => btnRotR.click());
+if (cabDup) cabDup.addEventListener('click', () => btnDuplicate.click());
+if (cabExtract) cabExtract.addEventListener('click', () => btnExtract.click());
+if (cabRemove) cabRemove.addEventListener('click', () => btnRemove.click());
+
+// Companion Details Panel Wiring
+const compRotL = document.getElementById('compRotL');
+const compRotR = document.getElementById('compRotR');
+const compEdit = document.getElementById('compEdit');
+const compDelete = document.getElementById('compDelete');
+const compAddBlank = document.getElementById('compAddBlank');
+
+if (compRotL) compRotL.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) rotateSinglePage(idx, -90);
+});
+if (compRotR) compRotR.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) rotateSinglePage(idx, 90);
+});
+if (compEdit) compEdit.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) openPageEditor(idx);
+});
+if (compDelete) compDelete.addEventListener('click', () => {
+    const idx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+    if (state.pages[idx]) {
+        showConfirm(`Remove Page ${idx + 1}?`, 'You can restore it anytime with Undo.', () => {
+            removePages([idx]);
+        });
+    }
+});
+if (compAddBlank) compAddBlank.addEventListener('click', insertBlankPage);
+
+// File Bar Remove Current File
+const btnRemoveCurrentFile = document.getElementById('btnRemoveCurrentFile');
+if (btnRemoveCurrentFile) {
+    btnRemoveCurrentFile.addEventListener('click', () => {
+        if (state.pages.length === 0) return;
+        showConfirm('Remove Document?', 'All loaded pages will be cleared from this editor session.', () => {
+            pushUndo('Clear Document');
+            state.pages = [];
+            state.files = [];
+            state.fileNames = [];
+            state.selected.clear();
+            thumbCache.clear();
+            renderFilesList();
+            renderGrid();
+            showToast('Document cleared');
+        });
+    });
+}
+
+// Result Panel Close Button
+const btnCloseResult = document.getElementById('btnCloseResult');
+if (btnCloseResult) {
+    btnCloseResult.addEventListener('click', () => {
+        resultPanel.classList.remove('visible');
+    });
+}
+
 btnRemove.addEventListener('click', () => {
     if (state.selected.size === 0) {
         showToast('Select pages to remove.');
@@ -1385,6 +1485,7 @@ btnApplyPageNumbers.addEventListener('click', () => {
     });
 
     pageNumbersModal.classList.remove('open');
+    thumbCache.clear();
     renderGrid();
     showToast(`Page numbers added to ${targetIndices.length} page(s)`);
 });
@@ -1393,6 +1494,7 @@ btnRemovePageNumbers.addEventListener('click', () => {
     pushUndo('Remove Page Numbers');
     state.pages.forEach(p => { delete p.pageNumber; });
     pageNumbersModal.classList.remove('open');
+    thumbCache.clear();
     renderGrid();
     showToast('Page numbers removed');
 });
@@ -1515,6 +1617,7 @@ btnApplyWatermark.addEventListener('click', () => {
     }
 
     watermarkModal.classList.remove('open');
+    thumbCache.clear();
     renderGrid();
     showToast(`Watermark applied to ${targetIndices.length} page(s)`);
 });
@@ -1523,6 +1626,7 @@ btnRemoveWatermark.addEventListener('click', () => {
     pushUndo('Remove Watermarks');
     state.pages.forEach(p => { delete p.watermark; });
     watermarkModal.classList.remove('open');
+    thumbCache.clear();
     renderGrid();
     showToast('Watermarks removed');
 });
@@ -2401,7 +2505,8 @@ pageEditorModal.addEventListener('click', e => {
 async function buildBlob(pageIndices) {
     try {
         const out = await PDFLib.PDFDocument.create();
-        const { rgb, StandardFonts, degrees } = PDFLib;
+        const { rgb, StandardFonts } = PDFLib;
+        const degrees = PDFLib.degrees || (n => ({ type: 'degrees', angle: n }));
 
         for (const pi of pageIndices) {
             const pg = state.pages[pi];
@@ -2468,7 +2573,7 @@ async function buildBlob(pageIndices) {
                     const b_ = parseInt(hexC.slice(5, 7), 16) / 255;
                     outPage.drawRectangle({
                         x, y: y_, width: w, height: h,
-                        borderColor: rgb(r_, g_, b_), borderWidth: 2, opacity: 0
+                        borderColor: rgb(r_, g_, b_), borderWidth: 2, opacity: 1
                     });
                 }
                 if (a.type === 'highlight') {
@@ -2494,8 +2599,8 @@ async function buildBlob(pageIndices) {
                             const p0 = a.points[pi-1];
                             const p1 = a.points[pi];
                             outPage.drawLine({
-                                start: { x: p0.x * width, y: (1 - p0.y) * height },
-                                end:   { x: p1.x * width, y: (1 - p1.y) * height },
+                                start: { x: p0.xPct * width, y: (1 - p0.yPct) * height },
+                                end:   { x: p1.xPct * width, y: (1 - p1.yPct) * height },
                                 thickness: lw,
                                 color: rgb(r_, g_, b_),
                                 opacity: 1,
@@ -2878,16 +2983,23 @@ function updatePageCount() {
 
 function updateFileLabel() {
     if (!fileLabel) return;
+    const btnRemoveCurrentFile = document.getElementById('btnRemoveCurrentFile');
     if (state.files.length === 0) {
         fileLabel.textContent = 'No files';
+        fileLabel.title = 'No files';
         fileMeta.textContent = '0 pages';
+        if (btnRemoveCurrentFile) btnRemoveCurrentFile.style.display = 'none';
     } else if (state.files.length === 1) {
         fileLabel.textContent = state.files[0].name;
+        fileLabel.title = state.files[0].name;
         fileMeta.textContent = `${state.pages.length} page${state.pages.length !== 1 ? 's' : ''} • ${formatFileSize(state.files[0].size)}`;
+        if (btnRemoveCurrentFile) btnRemoveCurrentFile.style.display = 'inline-flex';
     } else {
         fileLabel.textContent = `${state.files.length} PDF documents`;
+        fileLabel.title = `${state.files.length} PDF documents loaded`;
         const totalSize = state.files.reduce((acc, f) => acc + (f.size || 0), 0);
         fileMeta.textContent = `${state.pages.length} total pages • ${formatFileSize(totalSize)}`;
+        if (btnRemoveCurrentFile) btnRemoveCurrentFile.style.display = 'inline-flex';
     }
 }
 
@@ -2900,6 +3012,12 @@ function updateToolbarState() {
     btnDuplicate.disabled = !hasSel;
     btnRemove.disabled = !hasSel;
     btnExtract.disabled = !hasSel;
+
+    btnRotL.title = hasSel ? 'Rotate selected left (Shift+R)' : 'Select pages first to rotate';
+    btnRotR.title = hasSel ? 'Rotate selected right (R)' : 'Select pages first to rotate';
+    btnDuplicate.title = hasSel ? 'Duplicate selected page(s)' : 'Select pages first to duplicate';
+    btnRemove.title = hasSel ? 'Remove selected pages (Delete)' : 'Select pages first to remove';
+    btnExtract.title = hasSel ? 'Extract selected pages into new PDF' : 'Select pages first to extract';
 
     btnMerge.disabled = !hasPages;
     btnSave.disabled = !hasPages;
@@ -2916,7 +3034,49 @@ function updateToolbarState() {
         tbSelectionPill.style.borderColor = hasSel ? 'var(--pe-purple)' : 'rgba(108, 99, 255, 0.2)';
     }
 
+    // Contextual Action Bar
+    const contextualActionBar = document.getElementById('contextualActionBar');
+    const cabCount = document.getElementById('cabCount');
+    if (contextualActionBar) {
+        if (hasSel) {
+            contextualActionBar.style.display = 'flex';
+            if (cabCount) cabCount.textContent = `${state.selected.size} selected`;
+        } else {
+            contextualActionBar.style.display = 'none';
+        }
+    }
+
     updateSaveBarInfo();
+    updateCompanionPanel();
+}
+
+function updateCompanionPanel() {
+    const pageCompanionPanel = document.getElementById('pageCompanionPanel');
+    const pagesSection = document.getElementById('pagesSection');
+    if (!pageCompanionPanel || !pagesSection) return;
+
+    if (state.pages.length > 0 && state.pages.length <= 2) {
+        pageCompanionPanel.style.display = 'grid';
+        pagesSection.classList.add('few-pages');
+
+        const targetIdx = state.selected.size > 0 ? Array.from(state.selected)[0] : 0;
+        const pg = state.pages[targetIdx];
+        if (pg) {
+            const tagEl = document.getElementById('compPageTag');
+            const dimEl = document.getElementById('compDimensions');
+            const rotEl = document.getElementById('compRotation');
+            const annotEl = document.getElementById('compAnnots');
+
+            if (tagEl) tagEl.textContent = `Page ${targetIdx + 1} of ${state.pages.length}`;
+            if (dimEl) dimEl.textContent = pg.isBlank ? `${pg.blankWidth || 595} × ${pg.blankHeight || 842} pt` : 'A4 (595 × 842 pt)';
+            if (rotEl) rotEl.textContent = `${pg.rotation || 0}°`;
+            const annCount = (pg.annotations || []).length;
+            if (annotEl) annotEl.textContent = `${annCount} edit${annCount !== 1 ? 's' : ''}`;
+        }
+    } else {
+        pageCompanionPanel.style.display = 'none';
+        pagesSection.classList.remove('few-pages');
+    }
 }
 
 function updateSaveBarInfo() {
